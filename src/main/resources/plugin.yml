@@ -1,0 +1,6 @@
+name: RangedWeaponsTest
+version: '0.1-Development'
+main: me.Lucent.RangedWeaponsTest
+api-version: '1.21'
+depend:
+  - packetevents
