@@ -1,0 +1,36 @@
+BasicPistol:
+  itemName: Basic Pistol
+  itemLore:
+    - A Basic Pistol
+  defaultDamageTypes:
+    PhysicalDamage:
+      min: 5
+      max: 10
+  minBaseStatus: 0.2
+  maxBaseStatus: 0.3
+  fireType: Single-Shot
+  fireCooldown: 0.2
+  fireRateCanBeModified: false
+  maxAmmo: 10
+  maxAmmoCanBeModified: true
+  reloadTime: 2
+  hasActiveSlotSlot: true
+  defaultActiveChip: ScopeX3
+BasicAssaultRifle:
+  itemName: Basic Assault Rifle
+  itemLore:
+    - A Basic Assault Rifle
+  defaultDamageTypes:
+    PhysicalDamage:
+      min: 5
+      max: 10
+  minBaseStatus: 0.2
+  maxBaseStatus: 0.3
+  fireType: Full-Auto
+  fireRate: 20
+  fireRateCanBeModified: false
+  maxAmmo: 10
+  maxAmmoCanBeModified: true
+  reloadTime: 2
+  hasActiveSlotSlot: true
+  defaultActiveChip: ScopeX3

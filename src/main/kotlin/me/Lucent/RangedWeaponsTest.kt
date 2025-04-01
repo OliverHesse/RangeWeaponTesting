@@ -7,10 +7,14 @@ class RangedWeaponsTest : JavaPlugin() {
     override fun onEnable() {
         // Plugin startup logic
 
-        server.pluginManager.registerEvents(WeaponController(this),this)
+        server.pluginManager.registerEvents(PlayerController(this),this)
     }
 
     override fun onDisable() {
         // Plugin shutdown logic
     }
+
+
+
+
 }
