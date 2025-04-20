@@ -18,4 +18,14 @@ object PlayerWrapperHolder {
         return wrapper
 
     }
+
+    //for when a player leaves their data gets added into the queue to be saved
+    fun addSaveTask(player: Player){}
+
+    fun removeWrapper(player: Player){
+        if(!playerWrappers.containsKey(player)) return;
+
+        addSaveTask(player)
+        playerWrappers.remove(player);
+    }
 }

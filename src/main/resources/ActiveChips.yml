@@ -1,0 +1,5 @@
+ScopeX4:
+  equipmentTag: "Weapon"
+  executor: "scopeX4"
+  effect: "zooms in x4 times"
+  cooldown: 0

@@ -2,35 +2,66 @@ BasicPistol:
   itemName: Basic Pistol
   itemLore:
     - A Basic Pistol
-  defaultDamageTypes:
-    PhysicalDamage:
-      min: 5
-      max: 10
-  minBaseStatus: 0.2
-  maxBaseStatus: 0.3
-  fireType: Single-Shot
-  fireCooldown: 0.2
-  fireRateCanBeModified: false
-  maxAmmo: 10
-  maxAmmoCanBeModified: true
-  reloadTime: 2
-  hasActiveSlotSlot: true
-  defaultActiveChip: ScopeX3
+  WeaponStats:
+    defaultDamageTypes:
+      Physical:
+        min: 5
+        max: 10
+    minBaseStatus: 0.2
+    maxBaseStatus: 0.3
+    fireType: Single-Shot #single-shot or full-auto
+    bulletType: projectile #projectile/beam or hit-scan. explosive rounds use a default passive chip
+    fireCooldown: 0.2
+    fireRateCanBeModified: false
+    primaryFireExecutor: primaryCreateFullAutoProjectileTask
+    maxAmmo: 10
+    maxAmmoCanBeModified: true
+    reloadTime: 2
+  hasActiveSlot: false
+BasicGrenadeLauncher:
+  itemName: Basic Grenade Launcher
+  itemLore:
+    - A Basic Grenade Launcher
+    - deals 30% damage to surrounding enemies
+    - with base radius of 2.5m
+  WeaponStats:
+    defaultDamageTypes:
+      Physical:
+        min: 5
+        max: 10
+    minBaseStatus: 0.2
+    maxBaseStatus: 0.3
+    fireType: Single-Shot #single-shot, full-auto or charge
+    bulletType: projectile #projectile/beam or hit-scan. explosive rounds use an executor
+    fireCooldown: 0.2
+    fireRateCanBeModified: false
+    primaryFireExecutor: SingleShotExplosiveProjectile
+    executorArgs: #extra args it might need. doesn't always have these however
+      - 2.5 #radius
+      - 0.3 #origional damage percentage
+
+    maxAmmo: 10
+    maxAmmoCanBeModified: true
+    reloadTime: 2
+  hasActiveSlot: true
+  activeChip: ScopeX4
+
 BasicAssaultRifle:
   itemName: Basic Assault Rifle
   itemLore:
     - A Basic Assault Rifle
-  defaultDamageTypes:
-    PhysicalDamage:
-      min: 5
-      max: 10
-  minBaseStatus: 0.2
-  maxBaseStatus: 0.3
-  fireType: Full-Auto
-  fireRate: 20
-  fireRateCanBeModified: false
-  maxAmmo: 10
-  maxAmmoCanBeModified: true
-  reloadTime: 2
-  hasActiveSlotSlot: true
-  defaultActiveChip: ScopeX3
+  WeaponStats:
+    defaultDamageTypes:
+        Physical:
+        min: 5
+        max: 10
+    minBaseStatus: 0.2
+    maxBaseStatus: 0.3
+    fireType: Full-Auto
+    fireRate: 20
+    fireRateCanBeModified: false
+    maxAmmo: 10
+    maxAmmoCanBeModified: true
+    reloadTime: 2
+  hasActiveSlot: true
+  activeChip: ScopeX3

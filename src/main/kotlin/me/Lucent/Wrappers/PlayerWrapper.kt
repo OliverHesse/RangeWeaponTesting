@@ -1,6 +1,7 @@
 package me.Lucent.Wrappers
 
 import me.Lucent.RangedWeaponsTest
+import org.bukkit.Material
 import org.bukkit.entity.Player
 import kotlin.time.Clock
 import kotlin.time.Duration
@@ -13,7 +14,9 @@ class PlayerWrapper(val plugin:RangedWeaponsTest,val player: Player) {
     //data on active item in hand. even if there is nothing
     val activeItemData:ActiveItemData = ActiveItemData(plugin,this)
 
-
+    fun isItemEquip() : Boolean{
+        return player.inventory.itemInMainHand.type != Material.AIR
+    }
 
     fun isRightClicking():Boolean{
         if(player.isBlocking) return true;

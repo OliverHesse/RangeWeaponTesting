@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.20"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("plugin.serialization") version "1.8.0"
 }
 
 group = "io.github.OliverHesse"
@@ -23,6 +24,8 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.0")
+    implementation(kotlin("reflect"))
 }
 
 val targetJavaVersion = 21

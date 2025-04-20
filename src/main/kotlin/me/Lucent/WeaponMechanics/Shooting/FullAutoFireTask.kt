@@ -20,8 +20,8 @@ class FullAutoFireTask(val plugin:RangedWeaponsTest,val player:PlayerWrapper): B
 
     init {
         plugin.logger.info("STARING FULL AUTO")
-        var weapon = player.activeItemData.getItemStack();
-        var container = weapon.itemMeta.persistentDataContainer;
+        val weapon = player.activeItemData.getItemStack();
+        val container = weapon.itemMeta.persistentDataContainer;
 
         if(container.has(NamespacedKey(plugin,"fireRate"), PersistentDataType.DOUBLE)){
             roundsPerTick = container.get(NamespacedKey(plugin,"fireRate"), PersistentDataType.DOUBLE)!!/20.0

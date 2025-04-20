@@ -1,6 +1,9 @@
 package me.Lucent.Wrappers
 
+import me.Lucent.Handlers.WeaponHandlers.ScopeHandler
 import me.Lucent.RangedWeaponsTest
+import me.Lucent.WeaponMechanics.Shooting.ActiveExecutors
+import net.kyori.adventure.util.Services.Fallback
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitScheduler
@@ -9,10 +12,24 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
 
 
     var fullAutoTask:BukkitRunnable? = null;
-
-    fun getItemStack():ItemStack{
+    var zoomedIn = false;
+    var abilityCooldownTask:BukkitRunnable? = null;
+    fun getItemStack(): ItemStack {
         return player.player.inventory.itemInMainHand;
     }
+
+    //TODO change to just do time comparison
+    fun isAbilityOnCooldown():Boolean{
+
+        if(abilityCooldownTask  == null) return false;
+        if(abilityCooldownTask!!.isCancelled) {abilityCooldownTask = null; return false};
+
+
+        return  true
+
+    }
+
+
     //checks if it is on full auto
     //TODO check if it is currently burst firing
     fun isCurrentlyFiring():Boolean{
@@ -33,7 +50,7 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
         return false
     }
 
-    fun isRealoding():Boolean{return false}
+    fun isReloading():Boolean{return false}
 
     /**
      * clear all active tasks
@@ -42,5 +59,9 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
     fun reset(){
         if(fullAutoTask!=null) fullAutoTask!!.cancel()
         fullAutoTask = null
+
+        if(zoomedIn){
+            ScopeHandler.zoomOut(player)
+        }
     }
 }
