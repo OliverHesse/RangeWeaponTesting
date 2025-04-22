@@ -1,5 +1,14 @@
 ScopeX4:
   equipmentTag: "Weapon"
-  executor: "scopeX4"
+  executor: "scope"
+  executorArgs:
+    - 4.0
   effect: "zooms in x4 times"
+  cooldown: 0
+ScopeX8:
+  equipmentTag: "Weapon"
+  executor: "scope"
+  executorArgs:
+    - 8.0
+  effect: "zooms in x8 times"
   cooldown: 0

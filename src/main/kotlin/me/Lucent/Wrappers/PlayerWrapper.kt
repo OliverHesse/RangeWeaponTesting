@@ -21,7 +21,7 @@ class PlayerWrapper(val plugin:RangedWeaponsTest,val player: Player) {
     fun isRightClicking():Boolean{
         if(player.isBlocking) return true;
 
-        var duration :Duration = (System.currentTimeMillis()-lastRightClickTime).milliseconds
+        val duration :Duration = (System.currentTimeMillis()-lastRightClickTime).milliseconds
         plugin.logger.info(duration.toString())
         plugin.logger.info((duration < FULL_AUTO_GRACE_PERIOD).toString())
         return duration < FULL_AUTO_GRACE_PERIOD;
@@ -29,7 +29,6 @@ class PlayerWrapper(val plugin:RangedWeaponsTest,val player: Player) {
 
 
     fun rightClicked(){
-        kotlin.system.measureTimeMillis {  }
         lastRightClickTime = System.currentTimeMillis()
     }
 

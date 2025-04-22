@@ -17,9 +17,7 @@ class WeaponStatModifiersProfiles(){
 
     val finalDamageBonuses = mapOf<String,List<Double>>()
 
-
-    val flatFireRateBonus:Double = 0.0;
-    val fireRateBonus: Double = 0.0;
+    val gunTypeSpecificFireModifiers = mapOf<String,Double>()
     val flatStatusChanceBonus:Double = 0.0;
     val statusChanceBonus:Double = 0.0
 

@@ -26,24 +26,22 @@ class RangedWeaponsTest : JavaPlugin() {
         // Plugin shutdown logic
     }
 
-
-
-    fun createTestExplosiveWeapon():ItemStack{
+    fun createCustomItem(itemName:String):ItemStack{
         val dataFile = YamlConfiguration.loadConfiguration(File(dataFolder,"/RangedWeaponData.yml"))
-        val explosiveWeapon = dataFile.getConfigurationSection("BasicGrenadeLauncher")!!
+        val explosiveWeapon = dataFile.getConfigurationSection(itemName)!!
 
         //for now use min damage value
         val weaponBase = ItemStack(Material.DIAMOND_SWORD,1);
 
         weaponBase.editMeta {
-            it.persistentDataContainer.set(NamespacedKey(this,"id"), PersistentDataType.STRING,"BasicGrenadeLauncher")
+            it.persistentDataContainer.set(NamespacedKey(this,"id"), PersistentDataType.STRING,itemName)
             it.displayName(Component.text(explosiveWeapon.getString("itemName")!!))
             it.lore(buildList<Component> {
                 for( str in explosiveWeapon.getStringList("itemLore")){
                     //todo add some text formating
                     add(Component.text(str))
                 }
-                })
+            })
             //Create base stats
             val statMap = mutableMapOf<String,Double>()
             val weaponStats = explosiveWeapon.getConfigurationSection("WeaponStats")
@@ -60,6 +58,8 @@ class RangedWeaponsTest : JavaPlugin() {
         }
         return weaponBase;
     }
+
+
 
 
 

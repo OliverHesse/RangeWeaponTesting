@@ -1,8 +1,10 @@
 package me.Lucent.WeaponMechanics.Shooting
 
 import com.github.retrooper.packetevents.util.MathUtil
+import kotlinx.serialization.json.Json
 import me.Lucent.Handlers.WeaponHandlers.ShootHandler
 import me.Lucent.RangedWeaponsTest
+import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifiersProfiles
 import me.Lucent.Wrappers.PlayerWrapper
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
@@ -17,31 +19,43 @@ import kotlin.math.floor
 class FullAutoFireTask(val plugin:RangedWeaponsTest,val player:PlayerWrapper): BukkitRunnable() {
     var delayedRounds:Double = 0.0;
     var roundsPerTick:Double = 0.0;
-
+    var canModify:Boolean = false;
     init {
+        //TODO update
+
         plugin.logger.info("STARING FULL AUTO")
-        val weapon = player.activeItemData.getItemStack();
-        val container = weapon.itemMeta.persistentDataContainer;
+        val weaponData = player.activeItemData.getWeaponYamlData();
+        val fireRate = weaponData?.getConfigurationSection("WeaponStats")?.getDouble("fireRate")!!
+        val canBeModified = weaponData.getConfigurationSection("WeaponStats")?.getBoolean("fireRateCanBeModified")!!
 
-        if(container.has(NamespacedKey(plugin,"fireRate"), PersistentDataType.DOUBLE)){
-            roundsPerTick = container.get(NamespacedKey(plugin,"fireRate"), PersistentDataType.DOUBLE)!!/20.0
 
-        }
+        roundsPerTick = fireRate/20.0
+        canModify = canBeModified;
+
+    }
+    fun calculateRoundsThisTick():Double{
+        if(!canModify) return roundsPerTick
+        val container =  player.activeItemData.getItemStack().itemMeta.persistentDataContainer;
+
+        val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
+
+        val statModifierProfiles = Json.decodeFromString<WeaponStatModifiersProfiles>(statModifierProfilesEncoded!!)
+
+        //TODO apply fire rate buffs
+        return 0.0
     }
 
 
-
     override fun run() {
-        plugin.logger.info("running tick")
-        plugin.logger.info(ShootHandler.continueFullAuto(player).toString())
+
         if(ShootHandler.continueFullAuto(player)){
             //TODO make this work with all weapon types
-
+            roundsPerTick = calculateRoundsThisTick();
             delayedRounds = (delayedRounds+roundsPerTick)- floor(delayedRounds+roundsPerTick)
-            var numberOfRounds :Int = (delayedRounds+roundsPerTick).toInt()
+            val numberOfRounds :Int = (delayedRounds+roundsPerTick).toInt()
             if(numberOfRounds == 0) return;
             plugin.logger.info("number of rounds = $numberOfRounds")
-            plugin.logger.info("snowball locatoin ${player.player.eyeLocation}")
+            plugin.logger.info("snowball location ${player.player.eyeLocation}")
             for(i in 1..numberOfRounds){
                 val snowball:Projectile= player.player.world.spawnEntity(player.player.eyeLocation,EntityType.SNOWBALL) as Projectile
                 snowball.velocity = player.player.location.direction.multiply(1.5);

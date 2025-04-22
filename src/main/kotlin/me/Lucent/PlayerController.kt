@@ -25,57 +25,71 @@ import java.io.File
 class PlayerController(val plugin:RangedWeaponsTest):Listener  {
 
 
+
     @EventHandler
-    fun onPlayerInteract(e:PlayerInteractEvent){
+    fun primaryFireUsedEventCheck(e:PlayerInteractEvent){
+        if(e.action != Action.RIGHT_CLICK_AIR && e.action != Action.RIGHT_CLICK_BLOCK) return
+        plugin.logger.info("player tried to use primary fire")
         val wrappedPlayer = PlayerWrapperHolder.getPlayerWrapper(plugin,e.player);
         if(!wrappedPlayer.isItemEquip()) return;
         val itemStack = wrappedPlayer.activeItemData.getItemStack()
-        val id = itemStack.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return;
-        plugin.logger.info("item id retrieved")
-        //call executor
-        val weaponData = YamlConfiguration.loadConfiguration(File(plugin.dataFolder,"/RangedWeaponData.yml")).getConfigurationSection(id) ?: return
-        plugin.logger.info("weapon data retrieved")
 
-        if(e.action == Action.LEFT_CLICK_AIR || e.action == Action.LEFT_CLICK_BLOCK){
-
-
-            //player used an ability
-
-
-            //weapon does not have an active slot
-            if(!weaponData.getBoolean("hasActiveSlot")) return
-            plugin.logger.info("item has active slot")
-
-            if(wrappedPlayer.activeItemData.isAbilityOnCooldown()) return;
-            plugin.logger.info("ability is not on cooldown")
-            //get executor
-
-            val chipId = itemStack.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"activeChip"), PersistentDataType.STRING)!!
-
-            val chipData = YamlConfiguration.loadConfiguration(File(plugin.dataFolder,"/ActiveChips.yml")).getConfigurationSection(chipId) ?: return
-            plugin.logger.info("got chip data")
-            val executorName = chipData.getString("executor")
-            ActiveExecutors.executorNameToFunction[executorName]!!.call(wrappedPlayer)
-
-            //TODO start cooldown
-
-            return;
-        }
-        if(e.action != Action.RIGHT_CLICK_AIR && e.action != Action.RIGHT_CLICK_BLOCK) return
-
+        val weaponData = wrappedPlayer.activeItemData.getWeaponYamlData() ?: return;
 
         if(!wrappedPlayer.activeItemData.isCurrentlyFiring()){
             //logic here
             val executor = weaponData.getConfigurationSection("WeaponStats")?.getString("primaryFireExecutor") ?: return
-            val args = weaponData.getConfigurationSection("WeaponStats")?.getList("executorArgs") ?: return
+            val args = weaponData.getConfigurationSection("WeaponStats")?.getList("executorArgs") ?: listOf<Any>()
 
 
-            ActiveExecutors.executorNameToFunction[executor]!!.call(wrappedPlayer, args.toTypedArray())
-
+            val status = ActiveExecutors.executorNameToFunction[executor]!!.call(plugin,wrappedPlayer, args.toTypedArray())
+            plugin.logger.info(status.toString())
+            //used for cooldown checks
+            if(status) wrappedPlayer.activeItemData.weaponShot();
         }
 
         wrappedPlayer.rightClicked();
         e.isCancelled = true;
+    }
+
+
+
+    //might make 1 for abilities and 1 for primary fire
+    @EventHandler
+    fun abilityUsedEventCheck(e:PlayerInteractEvent){
+        if(e.action != Action.LEFT_CLICK_AIR && e.action != Action.LEFT_CLICK_BLOCK) return
+        plugin.logger.info("interact event called")
+        val wrappedPlayer = PlayerWrapperHolder.getPlayerWrapper(plugin,e.player);
+        if(!wrappedPlayer.isItemEquip()) return;
+        val itemStack = wrappedPlayer.activeItemData.getItemStack()
+
+        val weaponData = wrappedPlayer.activeItemData.getWeaponYamlData() ?: return;
+        plugin.logger.info("weapon data retrieved")
+
+        //weapon does not have an active slot
+        if(!weaponData.getBoolean("hasActiveSlot")) return
+        plugin.logger.info("item has active slot")
+
+        if(wrappedPlayer.activeItemData.isAbilityOnCooldown()) return;
+        plugin.logger.info("ability is not on cooldown")
+        //get executor
+
+        val chipId = itemStack.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"activeChip"), PersistentDataType.STRING)!!
+
+        val chipData = YamlConfiguration.loadConfiguration(File(plugin.dataFolder,"/ActiveChips.yml")).getConfigurationSection(chipId) ?: return
+        plugin.logger.info("got chip data")
+        val executor = chipData.getString("executor")
+        val args = chipData.getList("executorArgs") ?: listOf<Any>()
+        //TODO modify to add args
+        val status = ActiveExecutors.executorNameToFunction[executor]!!.call(plugin,wrappedPlayer,args.toTypedArray())
+
+        //used for cooldown checks
+        if(status) wrappedPlayer.activeItemData.abilityUsed();
+
+
+
+
+        e.isCancelled = true
     }
     @EventHandler
     fun onMainHandItemChanged(e:PlayerItemHeldEvent){
@@ -88,16 +102,10 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
     @EventHandler
     fun onPlayerJoin(e:PlayerJoinEvent){
         e.player.inventory.clear()
-        val tempLauncher = plugin.createTestExplosiveWeapon();
+        val tempLauncher = plugin.createCustomItem("BasicGrenadeLauncher");
+        val tempRifle = plugin.createCustomItem("BasicAssaultRifle")
         e.player.inventory.addItem(tempLauncher)
-
-        val tempRifle = ItemStack(Material.DIAMOND_SWORD,1)
-        tempRifle.editMeta {
-            it.persistentDataContainer.set(NamespacedKey(plugin,"fireRate"), PersistentDataType.DOUBLE,20.0);
-            it.displayName(Component.text("Basic Assault Rifle"));
-        }
-
-        e.player.inventory.addItem(tempRifle);
+        e.player.inventory.addItem(tempRifle)
     }
     @EventHandler
     fun onPlayerLeave(e:PlayerQuitEvent){

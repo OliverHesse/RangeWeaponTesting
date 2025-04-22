@@ -33,9 +33,9 @@ BasicGrenadeLauncher:
     maxBaseStatus: 0.3
     fireType: Single-Shot #single-shot, full-auto or charge
     bulletType: projectile #projectile/beam or hit-scan. explosive rounds use an executor
-    fireCooldown: 0.2
+    fireCooldown: 2
     fireRateCanBeModified: false
-    primaryFireExecutor: SingleShotExplosiveProjectile
+    primaryFireExecutor: primarySingleShotExplosiveProjectile
     executorArgs: #extra args it might need. doesn't always have these however
       - 2.5 #radius
       - 0.3 #origional damage percentage
@@ -63,5 +63,6 @@ BasicAssaultRifle:
     maxAmmo: 10
     maxAmmoCanBeModified: true
     reloadTime: 2
+    primaryFireExecutor: primaryCreateFullAutoProjectileTask
   hasActiveSlot: true
-  activeChip: ScopeX3
+  activeChip: ScopeX8
