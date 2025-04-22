@@ -21,4 +21,11 @@ class WeaponStatModifiersProfiles(){
     val flatStatusChanceBonus:Double = 0.0;
     val statusChanceBonus:Double = 0.0
 
+
+    //reload time = (base time)/(1+modifier)
+    val reloadTimeModifier:Double = 0.0;
+
+    //always round down
+    val totalAmmoModifier:Double = 0.0;
+
 }

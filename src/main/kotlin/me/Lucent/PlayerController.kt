@@ -3,6 +3,7 @@ package me.Lucent
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerAbilities
+import me.Lucent.WeaponMechanics.Reloading.ReloadTask
 import me.Lucent.WeaponMechanics.Shooting.ActiveExecutors
 import me.Lucent.WeaponMechanics.Shooting.FullAutoFireTask
 import net.kyori.adventure.text.Component
@@ -36,11 +37,25 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
 
         val weaponData = wrappedPlayer.activeItemData.getWeaponYamlData() ?: return;
 
+
+
+        if(wrappedPlayer.activeItemData.isReloading()) return
+
+
         if(!wrappedPlayer.activeItemData.isCurrentlyFiring()){
             //logic here
             val executor = weaponData.getConfigurationSection("WeaponStats")?.getString("primaryFireExecutor") ?: return
             val args = weaponData.getConfigurationSection("WeaponStats")?.getList("executorArgs") ?: listOf<Any>()
 
+
+            val remainingAmmo = itemStack.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"ammoLeft"),
+                PersistentDataType.INTEGER)
+            if (remainingAmmo == 0){
+                wrappedPlayer.activeItemData.reloadTask = ReloadTask(plugin,wrappedPlayer)
+                wrappedPlayer.activeItemData.reloadTask!!.runTaskTimer(plugin,0,1);
+                plugin.logger.info("RELOADING WEAPON")
+                return
+            }
 
             val status = ActiveExecutors.executorNameToFunction[executor]!!.call(plugin,wrappedPlayer, args.toTypedArray())
             plugin.logger.info(status.toString())

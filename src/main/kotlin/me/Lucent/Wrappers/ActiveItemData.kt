@@ -24,6 +24,10 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
     var abilityCooldownTask:BukkitRunnable? = null;
     var lastShotTime:Long = 0;
     var lastAbilityUsed:Long = 0;
+
+
+    var reloadTask:BukkitRunnable? = null
+
     fun getItemStack(): ItemStack {
         return player.player.inventory.itemInMainHand;
     }
@@ -55,6 +59,7 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
     }
 
 
+
     fun abilityUsed(){
         lastAbilityUsed = System.currentTimeMillis();
     }
@@ -76,10 +81,7 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
     }
 
 
-    //checks if weapon is still on cooldown(only really matters for singleshot)
-    fun firingOnCooldown():Boolean{
-        return false
-    }
+
 
 
     fun getWeaponYamlData():ConfigurationSection?{
@@ -89,7 +91,15 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
 
 
 
-    fun isReloading():Boolean{return false}
+    fun isReloading():Boolean{
+        if(reloadTask == null) return false
+
+        if(reloadTask!!.isCancelled){
+            reloadTask = null
+            return false
+        }
+        return true
+    }
 
     /**
      * clear all active tasks
@@ -98,6 +108,9 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
     fun reset(){
         if(fullAutoTask!=null) fullAutoTask!!.cancel()
         fullAutoTask = null
+
+        if(reloadTask!=null) reloadTask!!.cancel()
+        reloadTask = null
 
         if(zoomedIn){
             ScopeHandler.zoomOut(player)

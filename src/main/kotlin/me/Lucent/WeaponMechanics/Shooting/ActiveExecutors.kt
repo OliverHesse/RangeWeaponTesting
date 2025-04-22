@@ -5,9 +5,11 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPl
 import me.Lucent.Handlers.WeaponHandlers.ScopeHandler
 import me.Lucent.RangedWeaponsTest
 import me.Lucent.Wrappers.PlayerWrapper
+import org.bukkit.NamespacedKey
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.entity.Projectile
+import org.bukkit.persistence.PersistentDataType
 
 //must return true false to ensure it was successful
 
@@ -45,9 +47,22 @@ object ActiveExecutors {
         if(args.size != 2) return false
         if(!(args[0] is Double && args[1] is Double)) return  false
 
+
+
         val snowball: Projectile = player.player.world.spawnEntity(player.player.eyeLocation,EntityType.SNOWBALL) as Projectile
         snowball.velocity = player.player.location.direction.multiply(1.5);
         snowball.shooter = player.player;
+
+        //TODO make a bit safer...
+        player.activeItemData.getItemStack().editMeta {
+            it.persistentDataContainer.set(NamespacedKey(plugin,"ammoLeft"),
+                PersistentDataType.INTEGER,
+                it.persistentDataContainer.get(
+                    NamespacedKey(plugin,"ammoLeft"),
+                    PersistentDataType.INTEGER
+                )!!-1)
+        }
+
 
         return true;
     }

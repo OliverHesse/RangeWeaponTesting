@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.util.MathUtil
 import kotlinx.serialization.json.Json
 import me.Lucent.Handlers.WeaponHandlers.ShootHandler
 import me.Lucent.RangedWeaponsTest
+import me.Lucent.WeaponMechanics.Reloading.ReloadTask
 import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifiersProfiles
 import me.Lucent.Wrappers.PlayerWrapper
 import org.bukkit.Bukkit
@@ -60,6 +61,27 @@ class FullAutoFireTask(val plugin:RangedWeaponsTest,val player:PlayerWrapper): B
                 val snowball:Projectile= player.player.world.spawnEntity(player.player.eyeLocation,EntityType.SNOWBALL) as Projectile
                 snowball.velocity = player.player.location.direction.multiply(1.5);
                 snowball.shooter = player.player;
+
+
+                //handler ammo
+                val container = player.activeItemData.getItemStack()
+                container.editMeta {
+                    it.persistentDataContainer.set(NamespacedKey(plugin,"ammoLeft"),
+                    PersistentDataType.INTEGER,
+                    it.persistentDataContainer.get(
+                        NamespacedKey(plugin,"ammoLeft"),
+                        PersistentDataType.INTEGER
+                    )!!-1)
+                }
+                if(container.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"ammoLeft"),PersistentDataType.INTEGER)!! == 0){
+                    player.activeItemData.reloadTask = ReloadTask(plugin,player)
+                    player.activeItemData.reloadTask!!.runTaskTimer(plugin,0,1);
+
+
+                    this.cancel()
+
+                }
+
             }
         }else this.cancel()
     }

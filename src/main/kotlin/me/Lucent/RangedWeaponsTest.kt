@@ -54,7 +54,7 @@ class RangedWeaponsTest : JavaPlugin() {
             it.persistentDataContainer.set(NamespacedKey(this,"statProfile"), PersistentDataType.STRING, Json.encodeToString(statProfile))
             it.persistentDataContainer.set(NamespacedKey(this,"statModifierProfile"), PersistentDataType.STRING,Json.encodeToString(WeaponStatModifiersProfiles()))
             it.persistentDataContainer.set(NamespacedKey(this,"activeChip"), PersistentDataType.STRING,explosiveWeapon.getString("activeChip")!!)
-
+            it.persistentDataContainer.set(NamespacedKey(this,"ammoLeft"), PersistentDataType.INTEGER,weaponStats!!.getInt("maxAmmo"))
         }
         return weaponBase;
     }

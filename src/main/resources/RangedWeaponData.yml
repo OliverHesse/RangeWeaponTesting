@@ -42,7 +42,7 @@ BasicGrenadeLauncher:
 
     maxAmmo: 10
     maxAmmoCanBeModified: true
-    reloadTime: 2
+    reloadTime: 15
   hasActiveSlot: true
   activeChip: ScopeX4
 
@@ -62,7 +62,7 @@ BasicAssaultRifle:
     fireRateCanBeModified: false
     maxAmmo: 10
     maxAmmoCanBeModified: true
-    reloadTime: 2
+    reloadTime: 15
     primaryFireExecutor: primaryCreateFullAutoProjectileTask
   hasActiveSlot: true
   activeChip: ScopeX8
