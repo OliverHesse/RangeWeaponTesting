@@ -4,12 +4,15 @@ import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerAbilities
 import me.Lucent.Handlers.WeaponHandlers.ScopeHandler
 import me.Lucent.RangedWeaponsTest
+import me.Lucent.WeaponMechanics.ParticleEffectManagers.BeamEffect
 import me.Lucent.Wrappers.PlayerWrapper
+import org.bukkit.Color
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.entity.Projectile
 import org.bukkit.persistence.PersistentDataType
+import javax.swing.text.StyledEditorKit.BoldAction
 
 //must return true false to ensure it was successful
 
@@ -21,7 +24,8 @@ object ActiveExecutors {
         ::primaryCreateFullAutoProjectileTask,
         ::scope,
         ::primarySingleShotExplosiveProjectile,
-        ::singleShotExplosiveProjectile
+        ::singleShotExplosiveProjectile,
+        ::singleShotBeam
         ).associateBy { it.name }
 
     fun primaryCreateFullAutoProjectileTask(plugin:RangedWeaponsTest,player:PlayerWrapper, vararg args:Any):Boolean{
@@ -67,6 +71,22 @@ object ActiveExecutors {
         return true;
     }
 
+    fun singleShotBeam(plugin:RangedWeaponsTest,player: PlayerWrapper, vararg args:Any):Boolean{
+        //default to red for now
+        if(args.size != 3) return false;
+        plugin.logger.info((args[0] as Double).toString())
+        plugin.logger.info((args[1] as Double).toString())
+        plugin.logger.info((args[2] as Boolean).toString())
+
+        if(args[0] !is Double || args[1] !is Double || args[2] !is Boolean) return  false
+
+        val beamEffect = BeamEffect(plugin,player,args[0] as Double,args[1] as Double, Color.BLUE,args[2] as Boolean);
+
+        beamEffect.drawBeam();
+
+        return true
+
+    }
 
     //TODO fix bug where there is a delay
     fun scope(plugin:RangedWeaponsTest,player: PlayerWrapper, vararg args:Any):Boolean{

@@ -66,3 +66,30 @@ BasicAssaultRifle:
     primaryFireExecutor: primaryCreateFullAutoProjectileTask
   hasActiveSlot: true
   activeChip: ScopeX8
+
+
+InstantBeamGun:
+  itemName: Instant Beam Gun
+  itemLore:
+    - a basic single shot beam gun
+  WeaponStats:
+    defaultDamageTypes:
+      Physical:
+        min: 5
+        max: 10
+    minBaseStatus: 0.2
+    maxBaseStatus: 0.3
+    fireType: Single-Shot #single-shot, full-auto or charge
+    bulletType: beam #projectile/beam or hit-scan. explosive rounds use an executor
+    fireCooldown: 2
+    fireRateCanBeModified: false
+    primaryFireExecutor: singleShotBeam
+    executorArgs: #extra args it might need. doesn't always have these however
+      - 0.005
+      - 7.0
+      - true
+    maxAmmo: 1
+    maxAmmoCanBeModified: true
+    reloadTime: 4
+  hasActiveSlot: true
+  activeChip: ScopeX4

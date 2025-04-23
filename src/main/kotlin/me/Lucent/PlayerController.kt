@@ -119,8 +119,10 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
         e.player.inventory.clear()
         val tempLauncher = plugin.createCustomItem("BasicGrenadeLauncher");
         val tempRifle = plugin.createCustomItem("BasicAssaultRifle")
+        val tempBeam = plugin.createCustomItem("InstantBeamGun")
         e.player.inventory.addItem(tempLauncher)
         e.player.inventory.addItem(tempRifle)
+        e.player.inventory.addItem(tempBeam)
     }
     @EventHandler
     fun onPlayerLeave(e:PlayerQuitEvent){
