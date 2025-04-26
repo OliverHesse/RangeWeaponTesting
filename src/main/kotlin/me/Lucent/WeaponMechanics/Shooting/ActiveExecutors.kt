@@ -1,18 +1,18 @@
 package me.Lucent.WeaponMechanics.Shooting
 
-import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerAbilities
+import me.Lucent.Events.PlayerAttackEntityEvent
 import me.Lucent.Handlers.WeaponHandlers.ScopeHandler
 import me.Lucent.RangedWeaponsTest
-import me.Lucent.WeaponMechanics.ParticleEffectManagers.BeamEffect
+import me.Lucent.WeaponMechanics.EffectManagers.BeamEffect
+import me.Lucent.WeaponMechanics.EffectManagers.HitScanEffect
 import me.Lucent.Wrappers.PlayerWrapper
 import org.bukkit.Color
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.EntityType
-import org.bukkit.entity.Player
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Projectile
 import org.bukkit.persistence.PersistentDataType
-import javax.swing.text.StyledEditorKit.BoldAction
+import org.bukkit.util.Vector
 
 //must return true false to ensure it was successful
 
@@ -25,7 +25,8 @@ object ActiveExecutors {
         ::scope,
         ::primarySingleShotExplosiveProjectile,
         ::singleShotExplosiveProjectile,
-        ::singleShotBeam
+        ::singleShotBeam,
+        ::singleShotHitScan,
         ).associateBy { it.name }
 
     fun primaryCreateFullAutoProjectileTask(plugin:RangedWeaponsTest,player:PlayerWrapper, vararg args:Any):Boolean{
@@ -71,8 +72,29 @@ object ActiveExecutors {
         return true;
     }
 
+    fun singleShotHitScan(plugin:RangedWeaponsTest,player: PlayerWrapper, vararg args:Any):Boolean{
+        val cooldown = player.activeItemData.getWeaponYamlData()?.getConfigurationSection("WeaponStats")?.getDouble("fireCooldown") ?: return false
+        if(!(player.activeItemData.canWeaponShoot(cooldown))) return false
+        if(args.size != 1) return false
+        if(args[0] !is Double) return false
+        val rayResult = WeaponRayTrace(plugin,player,0.1,args[0] as Double,false).shootTrace()
+
+        if(rayResult[0] == null) return false
+        val traceHit = HitScanEffect(plugin,player, Color.RED,rayResult[0]!!.hitPosition);
+        traceHit.drawEffect()
+        if(rayResult[0]!!.hitBlock != null) return false;
+        val attackEvent = PlayerAttackEntityEvent(plugin,player,player.activeItemData.getItemStack(),rayResult[0]!!.hitEntity!!)
+        attackEvent.callEvent()
+        return true
+    }
+
     fun singleShotBeam(plugin:RangedWeaponsTest,player: PlayerWrapper, vararg args:Any):Boolean{
-        //default to red for now
+        //default to blue for now
+
+
+        val cooldown = player.activeItemData.getWeaponYamlData()?.getConfigurationSection("WeaponStats")?.getDouble("fireCooldown") ?: return false
+        if(!(player.activeItemData.canWeaponShoot(cooldown))) return false
+
         if(args.size != 3) return false;
         plugin.logger.info((args[0] as Double).toString())
         plugin.logger.info((args[1] as Double).toString())
@@ -80,9 +102,41 @@ object ActiveExecutors {
 
         if(args[0] !is Double || args[1] !is Double || args[2] !is Boolean) return  false
 
-        val beamEffect = BeamEffect(plugin,player,args[0] as Double,args[1] as Double, Color.BLUE,args[2] as Boolean);
 
+        val beamResults = WeaponRayTrace(plugin,player,args[0] as Double,args[1] as Double,args[2] as Boolean).shootTrace();
+
+
+        val playerLoc = player.player.eyeLocation.clone().toVector();
+        //find the furthest target
+        var furthest : Vector = playerLoc.clone()
+        var targetHit:Boolean = false;
+        for (result in beamResults){
+            if(result == null) continue
+            targetHit = true
+            if(playerLoc.distanceSquared(result.hitPosition) > playerLoc.distanceSquared(furthest)) furthest = result.hitPosition
+            //should skip blocks
+            if(result.hitEntity == null) continue
+
+
+
+
+            if(result.hitEntity !is LivingEntity) continue
+
+            val attackEvent = PlayerAttackEntityEvent(plugin,player,player.activeItemData.getItemStack(),result.hitEntity!!)
+            attackEvent.callEvent()
+            if(attackEvent.cancelled) continue
+            plugin.logger.info("Entity of name ${result.hitEntity!!.name} was attacked using a beam weapon")
+            //damage calculations not done here
+        }
+        plugin.logger.info(playerLoc.distance(furthest).toString())
+        plugin.logger.info("hit something $targetHit")
+        var distance = playerLoc.distance(furthest)
+        //it was only null results
+        if(!targetHit) distance = args[1] as Double
+        val beamEffect = BeamEffect(plugin,player,args[0] as Double,distance, Color.BLUE,args[2] as Boolean);
         beamEffect.drawBeam();
+
+        //do damage stuff
 
         return true
 

@@ -1,23 +1,4 @@
-BasicPistol:
-  itemName: Basic Pistol
-  itemLore:
-    - A Basic Pistol
-  WeaponStats:
-    defaultDamageTypes:
-      Physical:
-        min: 5
-        max: 10
-    minBaseStatus: 0.2
-    maxBaseStatus: 0.3
-    fireType: Single-Shot #single-shot or full-auto
-    bulletType: projectile #projectile/beam or hit-scan. explosive rounds use a default passive chip
-    fireCooldown: 0.2
-    fireRateCanBeModified: false
-    primaryFireExecutor: primaryCreateFullAutoProjectileTask
-    maxAmmo: 10
-    maxAmmoCanBeModified: true
-    reloadTime: 2
-  hasActiveSlot: false
+
 BasicGrenadeLauncher:
   itemName: Basic Grenade Launcher
   itemLore:
@@ -31,6 +12,9 @@ BasicGrenadeLauncher:
         max: 10
     minBaseStatus: 0.2
     maxBaseStatus: 0.3
+    minCriticalChance: 0.1
+    maxCriticalChance: 0.4
+    criticalCanBeModified: false
     fireType: Single-Shot #single-shot, full-auto or charge
     bulletType: projectile #projectile/beam or hit-scan. explosive rounds use an executor
     fireCooldown: 2
@@ -57,7 +41,11 @@ BasicAssaultRifle:
         max: 10
     minBaseStatus: 0.2
     maxBaseStatus: 0.3
+    minCriticalChance: 0.1
+    maxCriticalChance: 0.4
+    criticalCanBeModified: false
     fireType: Full-Auto
+    bulletType: projectile
     fireRate: 20
     fireRateCanBeModified: false
     maxAmmo: 10
@@ -79,6 +67,10 @@ InstantBeamGun:
         max: 10
     minBaseStatus: 0.2
     maxBaseStatus: 0.3
+    minCriticalChance: 0.1
+    maxCriticalChance: 0.4
+    criticalCanBeModified: false
+
     fireType: Single-Shot #single-shot, full-auto or charge
     bulletType: beam #projectile/beam or hit-scan. explosive rounds use an executor
     fireCooldown: 2
@@ -89,6 +81,34 @@ InstantBeamGun:
       - 7.0
       - true
     maxAmmo: 1
+    maxAmmoCanBeModified: true
+    reloadTime: 4
+  hasActiveSlot: true
+  activeChip: ScopeX4
+
+HitScanRifle:
+  itemName: Hit-scan rifle
+  itemLore:
+    - a basic hit-scan rifle
+  WeaponStats:
+    defaultDamageTypes:
+      Physical:
+        min: 5
+        max: 10
+    minBaseStatus: 0.2
+    maxBaseStatus: 0.3
+    minCriticalChance: 0.1
+    maxCriticalChance: 0.4
+    criticalCanBeModified: false
+
+    fireType: Single-Shot #single-shot, full-auto or charge
+    bulletType: hit-scan #projectile/beam or hit-scan. explosive rounds use an executor
+    fireCooldown: 2
+    fireRateCanBeModified: false
+    primaryFireExecutor: singleShotHitScan
+    executorArgs: #extra args it might need. doesn't always have these however
+      - 10.0
+    maxAmmo: 10
     maxAmmoCanBeModified: true
     reloadTime: 4
   hasActiveSlot: true

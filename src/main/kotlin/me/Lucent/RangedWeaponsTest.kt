@@ -20,6 +20,7 @@ class RangedWeaponsTest : JavaPlugin() {
         saveResource("RangedWeaponData.yml",true)
         saveResource("ActiveChips.yml",true)
         server.pluginManager.registerEvents(PlayerController(this),this)
+        server.pluginManager.registerEvents(GeneralEventHandler(this),this)
     }
 
     override fun onDisable() {
