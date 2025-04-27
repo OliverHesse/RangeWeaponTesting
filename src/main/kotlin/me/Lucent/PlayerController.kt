@@ -41,8 +41,7 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
 
         if(wrappedPlayer.activeItemData.isReloading()) return
 
-
-        if(!wrappedPlayer.activeItemData.isCurrentlyFiring()){
+        if(!wrappedPlayer.activeItemData.isCurrentlyFiring() && !wrappedPlayer.activeItemData.isCharging()){
             //logic here
             val executor = weaponData.getConfigurationSection("WeaponStats")?.getString("primaryFireExecutor") ?: return
             val args = weaponData.getConfigurationSection("WeaponStats")?.getList("executorArgs") ?: listOf<Any>()
@@ -121,7 +120,8 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
             "BasicGrenadeLauncher",
             "BasicAssaultRifle",
             "InstantBeamGun",
-            "HitScanRifle",)
+            "HitScanRifle",
+            "ChargeBeamRifle",)
         for (item in itemsToGivePlayer){
             e.player.inventory.addItem(plugin.createCustomItem(item))
         }

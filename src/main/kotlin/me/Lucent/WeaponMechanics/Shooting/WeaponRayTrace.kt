@@ -11,6 +11,7 @@ import org.bukkit.util.Vector
 class WeaponRayTrace(val plugin:RangedWeaponsTest, val playerWrapper: PlayerWrapper, val raySize:Double, val rayLength:Double, val canPenetrate:Boolean) {
 
 
+
     //TODO add penetrating where it will look for all entities hit
     fun shootTrace():List<RayTraceResult?>{
 

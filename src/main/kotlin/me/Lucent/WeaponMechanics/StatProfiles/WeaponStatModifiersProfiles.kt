@@ -28,4 +28,6 @@ class WeaponStatModifiersProfiles(){
     //always round down
     val totalAmmoModifier:Double = 0.0;
 
+    val chargeTimeModifier:Double  = 0.0;
+
 }

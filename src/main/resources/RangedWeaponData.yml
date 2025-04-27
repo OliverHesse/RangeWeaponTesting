@@ -113,3 +113,35 @@ HitScanRifle:
     reloadTime: 4
   hasActiveSlot: true
   activeChip: ScopeX4
+ChargeBeamRifle:
+  itemName: Charge-Beam Rifle
+  itemLore:
+    - a beam rifle that needs to be charged
+  WeaponStats:
+    defaultDamageTypes:
+      Physical:
+        min: 5
+        max: 10
+    minBaseStatus: 0.2
+    maxBaseStatus: 0.3
+    minCriticalChance: 0.1
+    maxCriticalChance: 0.4
+    criticalCanBeModified: false
+
+    fireType: charge #single-shot, full-auto or charge
+    bulletType: beam #projectile/beam or hit-scan. explosive rounds use an executor
+    fireCooldown: 2
+    chargeTime: 3
+    chargeTimeCanBeModified: false
+    fireRateCanBeModified: false
+    primaryFireExecutor: fullChargeWeapon
+    executorArgs: #extra args it might need. doesn't always have these however
+      - singleShotBeam #executor once charged
+      - 0.005 #parameters for the executor
+      - 7.0
+      - true
+    maxAmmo: 10
+    maxAmmoCanBeModified: true
+    reloadTime: 4
+  hasActiveSlot: true
+  activeChip: ScopeX4

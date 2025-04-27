@@ -1,10 +1,12 @@
 package me.Lucent.WeaponMechanics.Shooting
 
+import kotlinx.serialization.json.Json
 import me.Lucent.Events.PlayerAttackEntityEvent
 import me.Lucent.Handlers.WeaponHandlers.ScopeHandler
 import me.Lucent.RangedWeaponsTest
 import me.Lucent.WeaponMechanics.EffectManagers.BeamEffect
 import me.Lucent.WeaponMechanics.EffectManagers.HitScanEffect
+import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifiersProfiles
 import me.Lucent.Wrappers.PlayerWrapper
 import org.bukkit.Color
 import org.bukkit.NamespacedKey
@@ -13,6 +15,7 @@ import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Projectile
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.util.Vector
+import kotlin.math.floor
 
 //must return true false to ensure it was successful
 
@@ -27,7 +30,19 @@ object ActiveExecutors {
         ::singleShotExplosiveProjectile,
         ::singleShotBeam,
         ::singleShotHitScan,
+        ::fullChargeWeapon
         ).associateBy { it.name }
+    //TODO Modify to work with new config system
+    fun fullChargeWeapon(plugin: RangedWeaponsTest,player: PlayerWrapper,vararg args:Any):Boolean{
+        if(args.isEmpty()) return false
+        if(args[0] !is String) return  false
+
+        val task = FullChargeWeaponTask(plugin,player,args[0] as String,*args.drop(1).toTypedArray())
+        player.activeItemData.chargingTask = task
+        player.activeItemData.chargingTask!!.runTaskTimer(plugin,0,1);
+        return true
+    }
+
 
     fun primaryCreateFullAutoProjectileTask(plugin:RangedWeaponsTest,player:PlayerWrapper, vararg args:Any):Boolean{
 
@@ -59,14 +74,7 @@ object ActiveExecutors {
         snowball.shooter = player.player;
 
         //TODO make a bit safer...
-        player.activeItemData.getItemStack().editMeta {
-            it.persistentDataContainer.set(NamespacedKey(plugin,"ammoLeft"),
-                PersistentDataType.INTEGER,
-                it.persistentDataContainer.get(
-                    NamespacedKey(plugin,"ammoLeft"),
-                    PersistentDataType.INTEGER
-                )!!-1)
-        }
+        player.activeItemData.reduceWeaponAmmo()
 
 
         return true;
@@ -85,6 +93,8 @@ object ActiveExecutors {
         if(rayResult[0]!!.hitBlock != null) return false;
         val attackEvent = PlayerAttackEntityEvent(plugin,player,player.activeItemData.getItemStack(),rayResult[0]!!.hitEntity!!)
         attackEvent.callEvent()
+
+        player.activeItemData.reduceWeaponAmmo()
         return true
     }
 
@@ -136,8 +146,7 @@ object ActiveExecutors {
         val beamEffect = BeamEffect(plugin,player,args[0] as Double,distance, Color.BLUE,args[2] as Boolean);
         beamEffect.drawBeam();
 
-        //do damage stuff
-
+        player.activeItemData.reduceWeaponAmmo()
         return true
 
     }

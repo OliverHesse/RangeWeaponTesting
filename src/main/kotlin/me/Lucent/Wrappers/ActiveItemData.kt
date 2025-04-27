@@ -20,6 +20,7 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
 
 
     var fullAutoTask:BukkitRunnable? = null;
+    var chargingTask:BukkitRunnable? = null;
     var zoomedIn = false;
     var abilityCooldownTask:BukkitRunnable? = null;
     var lastShotTime:Long = 0;
@@ -72,7 +73,7 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
 
         if(fullAutoTask == null) return false;
 
-        plugin.logger.info("is task running: "+plugin.server.scheduler.isCurrentlyRunning(fullAutoTask!!.taskId).toString())
+
         if(fullAutoTask!!.isCancelled){
             fullAutoTask = null;
             return false
@@ -80,8 +81,27 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
         return true;
     }
 
+    fun isCharging():Boolean{
+        if(chargingTask == null) return false;
 
 
+        if(chargingTask!!.isCancelled){
+            chargingTask = null;
+            return false
+        }
+        return true;
+    }
+
+    fun reduceWeaponAmmo(){
+        getItemStack().editMeta {
+            it.persistentDataContainer.set(NamespacedKey(plugin,"ammoLeft"),
+                PersistentDataType.INTEGER,
+                it.persistentDataContainer.get(
+                    NamespacedKey(plugin,"ammoLeft"),
+                    PersistentDataType.INTEGER
+                )!!-1)
+        }
+    }
 
 
     fun getWeaponYamlData():ConfigurationSection?{
