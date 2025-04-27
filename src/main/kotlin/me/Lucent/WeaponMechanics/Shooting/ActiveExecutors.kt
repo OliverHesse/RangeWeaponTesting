@@ -79,14 +79,14 @@ object ActiveExecutors {
 
         return true;
     }
-
+    //TODO bug where 2 ammo is consumed
     fun singleShotHitScan(plugin:RangedWeaponsTest,player: PlayerWrapper, vararg args:Any):Boolean{
         val cooldown = player.activeItemData.getWeaponYamlData()?.getConfigurationSection("WeaponStats")?.getDouble("fireCooldown") ?: return false
         if(!(player.activeItemData.canWeaponShoot(cooldown))) return false
         if(args.size != 1) return false
         if(args[0] !is Double) return false
         val rayResult = WeaponRayTrace(plugin,player,0.1,args[0] as Double,false).shootTrace()
-
+        player.activeItemData.reduceWeaponAmmo()
         if(rayResult[0] == null) return false
         val traceHit = HitScanEffect(plugin,player, Color.RED,rayResult[0]!!.hitPosition);
         traceHit.drawEffect()
@@ -94,7 +94,7 @@ object ActiveExecutors {
         val attackEvent = PlayerAttackEntityEvent(plugin,player,player.activeItemData.getItemStack(),rayResult[0]!!.hitEntity!!)
         attackEvent.callEvent()
 
-        player.activeItemData.reduceWeaponAmmo()
+
         return true
     }
 

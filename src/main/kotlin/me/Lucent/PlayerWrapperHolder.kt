@@ -26,6 +26,7 @@ object PlayerWrapperHolder {
         if(!playerWrappers.containsKey(player)) return;
 
         addSaveTask(player)
+        playerWrappers[player]!!.safeDeleteWrapper()
         playerWrappers.remove(player);
     }
 }

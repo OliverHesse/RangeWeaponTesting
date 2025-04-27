@@ -1,8 +1,11 @@
 package me.Lucent.Wrappers
 
+import kotlinx.serialization.json.Json
 import me.Lucent.Handlers.WeaponHandlers.ScopeHandler
 import me.Lucent.RangedWeaponsTest
+import me.Lucent.WeaponMechanics.Reloading.ReloadTask
 import me.Lucent.WeaponMechanics.Shooting.ActiveExecutors
+import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifiersProfiles
 import net.kyori.adventure.util.Services.Fallback
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.ConfigurationSection
@@ -12,6 +15,7 @@ import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitScheduler
 import java.io.File
+import kotlin.math.floor
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -101,6 +105,55 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
                     PersistentDataType.INTEGER
                 )!!-1)
         }
+        player.playerUI.updateBoard();
+    }
+
+    //TODO add validation that it infact has a reload time
+    //TODO add in reloadTime modifer
+    fun getReloadTime():Double{
+        val weaponData = getWeaponYamlData();
+
+        val baseReloadTime = weaponData!!.getConfigurationSection("WeaponStats")!!.getDouble("reloadTime")
+        val container =  getItemStack().itemMeta.persistentDataContainer;
+
+        val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
+
+        val statModifierProfiles = Json.decodeFromString<WeaponStatModifiersProfiles>(statModifierProfilesEncoded!!)
+        return  (baseReloadTime)/(1+statModifierProfiles.reloadTimeModifier)
+
+    }
+    //TODO add validation that it is infact a weapon with ammo
+    fun getWeaponMaxAmmo():Int{
+        val weaponData = player.activeItemData.getWeaponYamlData()
+
+        val container =  player.activeItemData.getItemStack().itemMeta.persistentDataContainer;
+
+        val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
+
+        val statModifierProfiles = Json.decodeFromString<WeaponStatModifiersProfiles>(statModifierProfilesEncoded!!)
+
+
+        val baseMaxAmmo = weaponData!!.getConfigurationSection("WeaponStats")!!.getInt("maxAmmo")
+        val canModify = weaponData.getConfigurationSection("WeaponStats")!!.getBoolean("maxAmmoCanBeModified")
+
+        if(canModify) return  floor(baseMaxAmmo*(1+statModifierProfiles.totalAmmoModifier)).toInt()
+        return baseMaxAmmo
+    }
+    //TODO add some validation
+    fun getAmmoLeft():Int{
+        return getItemStack().itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"ammoLeft"),
+            PersistentDataType.INTEGER)!!
+
+    }
+
+    fun setWeaponAmmo(toSet:Int){
+
+        val item = getItemStack()
+
+        item.editMeta {
+            it.persistentDataContainer.set(NamespacedKey(plugin,"ammoLeft"), PersistentDataType.INTEGER,toSet)
+        }
+        player.playerUI.updateBoard();
     }
 
 

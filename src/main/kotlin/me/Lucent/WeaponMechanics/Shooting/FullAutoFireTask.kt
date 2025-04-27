@@ -64,23 +64,15 @@ class FullAutoFireTask(val plugin:RangedWeaponsTest,val player:PlayerWrapper): B
 
 
                 //handler ammo
-                val container = player.activeItemData.getItemStack()
-                container.editMeta {
-                    it.persistentDataContainer.set(NamespacedKey(plugin,"ammoLeft"),
-                    PersistentDataType.INTEGER,
-                    it.persistentDataContainer.get(
-                        NamespacedKey(plugin,"ammoLeft"),
-                        PersistentDataType.INTEGER
-                    )!!-1)
-                }
-                if(container.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"ammoLeft"),PersistentDataType.INTEGER)!! == 0){
+                player.activeItemData.reduceWeaponAmmo();
+                if(player.activeItemData.getAmmoLeft() == 0){
                     player.activeItemData.reloadTask = ReloadTask(plugin,player)
                     player.activeItemData.reloadTask!!.runTaskTimer(plugin,0,1);
 
 
                     this.cancel()
-
                 }
+
 
             }
         }else this.cancel()

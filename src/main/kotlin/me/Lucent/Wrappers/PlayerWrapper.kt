@@ -8,11 +8,18 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 class PlayerWrapper(val plugin:RangedWeaponsTest,val player: Player) {
+    //TODO modify to actually work
+    var maxHealth:Double = 100.0;
+    var health:Double = 100.0;
+    fun safeDeleteWrapper(){}
 
+
+    val activeItemData:ActiveItemData = ActiveItemData(plugin,this)
+
+    val playerUI = UIWrapper(plugin,this)
     private val FULL_AUTO_GRACE_PERIOD: Duration = 215.milliseconds
     private var lastRightClickTime : Long = 0;
     //data on active item in hand. even if there is nothing
-    val activeItemData:ActiveItemData = ActiveItemData(plugin,this)
 
     fun isItemEquip() : Boolean{
         return player.inventory.itemInMainHand.type != Material.AIR

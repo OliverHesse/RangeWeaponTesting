@@ -47,9 +47,8 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
             val args = weaponData.getConfigurationSection("WeaponStats")?.getList("executorArgs") ?: listOf<Any>()
 
 
-            val remainingAmmo = itemStack.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"ammoLeft"),
-                PersistentDataType.INTEGER)
-            if (remainingAmmo == 0){
+
+            if (wrappedPlayer.activeItemData.getAmmoLeft() == 0){
                 wrappedPlayer.activeItemData.reloadTask = ReloadTask(plugin,wrappedPlayer)
                 wrappedPlayer.activeItemData.reloadTask!!.runTaskTimer(plugin,0,1);
                 plugin.logger.info("RELOADING WEAPON")
@@ -105,9 +104,16 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
 
         e.isCancelled = true
     }
+    //stuff is delayed since slot isnt actualy changed till after this event is called
     @EventHandler
     fun onMainHandItemChanged(e:PlayerItemHeldEvent){
+        plugin.logger.info("changed hands event called")
         PlayerWrapperHolder.getPlayerWrapper(plugin,e.player).activeItemData.reset();
+        plugin.logger.info("new item = ${e.newSlot}")
+        PlayerWrapperHolder.getPlayerWrapper(plugin,e.player).playerUI.updateBoard();
+        plugin.server.scheduler.runTaskLater(plugin,Runnable {
+            PlayerWrapperHolder.getPlayerWrapper(plugin,e.player).playerUI.updateBoard()
+        },1L)
     }
     @EventHandler
     fun onProjectileLaunch(e:ProjectileLaunchEvent){
@@ -125,6 +131,10 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
         for (item in itemsToGivePlayer){
             e.player.inventory.addItem(plugin.createCustomItem(item))
         }
+
+        //makes a new wrapper
+        PlayerWrapperHolder.getPlayerWrapper(plugin,e.player);
+
 
     }
     @EventHandler

@@ -12,8 +12,9 @@ import org.bukkit.scheduler.BukkitRunnable
 import kotlin.math.floor
 
 class ReloadTask(private val plugin: RangedWeaponsTest, private val player: PlayerWrapper): BukkitRunnable() {
+    private val EMPTY_SQUARE_CHAR = "□"
+    private val FILLED_SQUARE_CHAR = "■"
 
-    private val RELOAD_CHAR = "█";
     private val RELOAD_BAR_BOX_NUMBER = 10;
 
     private var finalReloadTimeTicks:Int = 0
@@ -25,24 +26,13 @@ class ReloadTask(private val plugin: RangedWeaponsTest, private val player: Play
     private var maxAmmo:Int = 0
 
     init {
-        val weaponData = player.activeItemData.getWeaponYamlData()
-        val baseReloadTime = weaponData!!.getConfigurationSection("WeaponStats")!!.getDouble("reloadTime")
-        val container =  player.activeItemData.getItemStack().itemMeta.persistentDataContainer;
-
-        val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
-
-        val statModifierProfiles = Json.decodeFromString<WeaponStatModifiersProfiles>(statModifierProfilesEncoded!!)
-        val finalTimeSeconds = (baseReloadTime)/(1+statModifierProfiles.reloadTimeModifier)
-        finalReloadTimeTicks = floor(finalTimeSeconds*20).toInt()
-
-        tickPerBoxChar = (finalReloadTimeTicks/RELOAD_BAR_BOX_NUMBER).toDouble();
+            finalReloadTimeTicks =  floor(player.activeItemData.getReloadTime()*20).toInt()
+            maxAmmo = player.activeItemData.getWeaponMaxAmmo()
 
 
-        val baseMaxAmmo = weaponData.getConfigurationSection("WeaponStats")!!.getInt("maxAmmo")
-        val canModify = weaponData.getConfigurationSection("WeaponStats")!!.getBoolean("maxAmmoCanBeModified")
+            tickPerBoxChar = (finalReloadTimeTicks/RELOAD_BAR_BOX_NUMBER).toDouble();
 
-        if(canModify) maxAmmo = floor(baseMaxAmmo*(1+statModifierProfiles.totalAmmoModifier)).toInt()
-        else maxAmmo = baseMaxAmmo
+
     }
 
     //assume it runs every tick
@@ -51,12 +41,8 @@ class ReloadTask(private val plugin: RangedWeaponsTest, private val player: Play
 
         if(ticksElapsed >= finalReloadTimeTicks){
             //set ammo
-            val item = player.activeItemData.getItemStack()
-
-            item.editMeta {
-                it.persistentDataContainer.set(NamespacedKey(plugin,"ammoLeft"), PersistentDataType.INTEGER,maxAmmo)
-            }
-            val loadingBarString = "["+RELOAD_CHAR.repeat(RELOAD_BAR_BOX_NUMBER)+"]"
+            player.activeItemData.setWeaponAmmo(player.activeItemData.getWeaponMaxAmmo());
+            val loadingBarString = "["+FILLED_SQUARE_CHAR.repeat(RELOAD_BAR_BOX_NUMBER)+"]"
             player.player.sendActionBar(Component.text(loadingBarString).color(TextColor.color(249, 255, 74)))
             this.cancel()
             return
@@ -68,7 +54,7 @@ class ReloadTask(private val plugin: RangedWeaponsTest, private val player: Play
         plugin.logger.info("this should not be here")
         plugin.logger.info(ticksElapsed.toString());
         plugin.logger.info(finalReloadTimeTicks.toString())
-        val loadingBarString = "["+RELOAD_CHAR.repeat(totalBoxesElapsed)+"\u200E".repeat(RELOAD_BAR_BOX_NUMBER-totalBoxesElapsed)+"]"
+        val loadingBarString = "["+FILLED_SQUARE_CHAR.repeat(totalBoxesElapsed)+EMPTY_SQUARE_CHAR.repeat(RELOAD_BAR_BOX_NUMBER-totalBoxesElapsed)+"]"
         player.player.sendActionBar(Component.text(loadingBarString).color(TextColor.color(249, 255, 74)))
         ticksElapsed += 1
 
