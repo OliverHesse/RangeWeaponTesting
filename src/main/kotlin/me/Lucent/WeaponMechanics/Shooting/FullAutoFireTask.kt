@@ -1,20 +1,16 @@
 package me.Lucent.WeaponMechanics.Shooting
 
-import com.github.retrooper.packetevents.util.MathUtil
 import kotlinx.serialization.json.Json
 import me.Lucent.Handlers.WeaponHandlers.ShootHandler
 import me.Lucent.RangedWeaponsTest
 import me.Lucent.WeaponMechanics.Reloading.ReloadTask
-import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifiersProfiles
+import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifierProfile
 import me.Lucent.Wrappers.PlayerWrapper
-import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Projectile
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
-import org.bukkit.scheduler.BukkitTask
-import java.util.function.Consumer
 import kotlin.math.floor
 
 class FullAutoFireTask(val plugin:RangedWeaponsTest,val player:PlayerWrapper): BukkitRunnable() {
@@ -40,7 +36,7 @@ class FullAutoFireTask(val plugin:RangedWeaponsTest,val player:PlayerWrapper): B
 
         val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
 
-        val statModifierProfiles = Json.decodeFromString<WeaponStatModifiersProfiles>(statModifierProfilesEncoded!!)
+        val statModifierProfiles = Json.decodeFromString<WeaponStatModifierProfile>(statModifierProfilesEncoded!!)
 
         //TODO apply fire rate buffs
         return 0.0

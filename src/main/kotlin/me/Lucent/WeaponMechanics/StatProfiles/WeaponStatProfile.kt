@@ -7,5 +7,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class WeaponStatProfile(
     val damageTypeMap:Map<String,Double>,
-    val statusChance:Double
+    val statusChance:Double,
+    val criticalChance:Double,
+    val criticalDamage:Double,
+
 )

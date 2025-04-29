@@ -1,19 +1,12 @@
 package me.Lucent.Wrappers
 
 import io.papermc.paper.scoreboard.numbers.NumberFormat
-import kotlinx.serialization.json.Json
 import me.Lucent.RangedWeaponsTest
-import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifiersProfiles
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
 import org.bukkit.Material
-import org.bukkit.NamespacedKey
-import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scoreboard.Criteria
 import org.bukkit.scoreboard.DisplaySlot
-import org.bukkit.scoreboard.Scoreboard
-import org.bukkit.scoreboard.ScoreboardManager
-import kotlin.math.floor
 
 class UIWrapper(val plugin:RangedWeaponsTest,val playerWrapper: PlayerWrapper) {
 

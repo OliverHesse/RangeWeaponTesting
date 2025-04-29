@@ -1,18 +1,15 @@
 package me.Lucent.WeaponMechanics.Shooting
 
 import kotlinx.serialization.json.Json
-import me.Lucent.Handlers.WeaponHandlers.ShootHandler
 import me.Lucent.RangedWeaponsTest
-import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifiersProfiles
+import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifierProfile
 import me.Lucent.Wrappers.PlayerWrapper
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
-import javax.swing.text.StyledEditorKit.BoldAction
 import kotlin.math.floor
-import kotlin.reflect.KCallable
 
 class FullChargeWeaponTask(val plugin:RangedWeaponsTest,val player: PlayerWrapper,val shootFunctionName:String,vararg args:Any): BukkitRunnable() {
 
@@ -34,7 +31,7 @@ class FullChargeWeaponTask(val plugin:RangedWeaponsTest,val player: PlayerWrappe
 
         val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
 
-        val statModifierProfiles = Json.decodeFromString<WeaponStatModifiersProfiles>(statModifierProfilesEncoded!!)
+        val statModifierProfiles = Json.decodeFromString<WeaponStatModifierProfile>(statModifierProfilesEncoded!!)
         val finalTimeSeconds = (baseReloadTime)/(1+statModifierProfiles.chargeTimeModifier)
         finalChargeTimeTicks = floor(finalTimeSeconds*20).toInt()
 

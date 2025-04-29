@@ -1,4 +1,5 @@
 
+
 BasicGrenadeLauncher:
   itemName: Basic Grenade Launcher
   itemLore:
@@ -6,142 +7,208 @@ BasicGrenadeLauncher:
     - deals 30% damage to surrounding enemies
     - with base radius of 2.5m
   WeaponStats:
+    fireType: Single-Shot #single-shot, full-auto or charge
+    bulletType: projectile #projectile/beam or hit-scan. explosive rounds use an executor
+
     defaultDamageTypes:
       Physical:
         min: 5
         max: 10
-    minBaseStatus: 0.2
-    maxBaseStatus: 0.3
-    minCriticalChance: 0.1
-    maxCriticalChance: 0.4
-    criticalCanBeModified: false
-    fireType: Single-Shot #single-shot, full-auto or charge
-    bulletType: projectile #projectile/beam or hit-scan. explosive rounds use an executor
-    fireCooldown: 2
-    fireRateCanBeModified: false
+    statusChance:
+      min: 0.2
+      max: 0.3
+      canBeModified: false
+    criticalChance:
+      base: 0.4
+      canBeModified: false
+    criticalDamage:
+      min: 0.3
+      max: 0.7
+      canBeModified: true
+    fireCooldown:
+      base: 2
+      canBeModified: false
+    ammo:
+      base: 10
+      canBeModified: true
+    reloadTime:
+      base: 4
+      canBeModified: false
+
+
     primaryFireExecutor: primarySingleShotExplosiveProjectile
     executorArgs: #extra args it might need. doesn't always have these however
       - 2.5 #radius
       - 0.3 #origional damage percentage
 
-    maxAmmo: 10
-    maxAmmoCanBeModified: true
-    reloadTime: 15
+
   hasActiveSlot: true
   activeChip: ScopeX4
-
-BasicAssaultRifle:
-  itemName: Basic Assault Rifle
-  itemLore:
-    - A Basic Assault Rifle
-  WeaponStats:
-    defaultDamageTypes:
-        Physical:
-        min: 5
-        max: 10
-    minBaseStatus: 0.2
-    maxBaseStatus: 0.3
-    minCriticalChance: 0.1
-    maxCriticalChance: 0.4
-    criticalCanBeModified: false
-    fireType: Full-Auto
-    bulletType: projectile
-    fireRate: 20
-    fireRateCanBeModified: false
-    maxAmmo: 10
-    maxAmmoCanBeModified: true
-    reloadTime: 15
-    primaryFireExecutor: primaryCreateFullAutoProjectileTask
-  hasActiveSlot: true
-  activeChip: ScopeX8
-
-
 InstantBeamGun:
   itemName: Instant Beam Gun
   itemLore:
     - a basic single shot beam gun
   WeaponStats:
+    fireType: Single-Shot #single-shot, full-auto or charge
+    bulletType: beam #projectile/beam or hit-scan. explosive rounds use an executor
+
     defaultDamageTypes:
       Physical:
         min: 5
         max: 10
-    minBaseStatus: 0.2
-    maxBaseStatus: 0.3
-    minCriticalChance: 0.1
-    maxCriticalChance: 0.4
-    criticalCanBeModified: false
+    statusChance:
+      min: 0.2
+      max: 0.3
+      canBeModified: false
+    criticalChance:
+      base: 0.4
+      canBeModified: false
+    criticalDamage:
+      min: 0.3
+      max: 0.7
+      canBeModified: true
+    fireCooldown:
+      base: 2
+      canBeModified: false
+    ammo:
+      base: 10
+      canBeModified: true
+    reloadTime:
+      base: 4
+      canBeModified: false
 
-    fireType: Single-Shot #single-shot, full-auto or charge
-    bulletType: beam #projectile/beam or hit-scan. explosive rounds use an executor
-    fireCooldown: 2
-    fireRateCanBeModified: false
+
+
     primaryFireExecutor: singleShotBeam
     executorArgs: #extra args it might need. doesn't always have these however
       - 0.005
       - 7.0
       - true
-    maxAmmo: 1
-    maxAmmoCanBeModified: true
-    reloadTime: 4
-  hasActiveSlot: true
-  activeChip: ScopeX4
 
+  activeChip:
+    hasSlot: true
+    slotted: ScopeX4
 HitScanRifle:
   itemName: Hit-scan rifle
   itemLore:
     - a basic hit-scan rifle
   WeaponStats:
+    #not super necessary but useful for descriptive stuff
+    fireType: Single-Shot #single-shot, full-auto or charge
+    bulletType: hit-scan #projectile/beam or hit-scan. explosive rounds use an executor
+
     defaultDamageTypes:
+      Heat:
+        min: 4
+        max: 6
       Physical:
         min: 5
         max: 10
-    minBaseStatus: 0.2
-    maxBaseStatus: 0.3
-    minCriticalChance: 0.1
-    maxCriticalChance: 0.4
-    criticalCanBeModified: false
+    statusChance:
+      base: 0.8
+      canBeModified: false
+    criticalChance:
+      base: 0.4
+      canBeModified: false
+    criticalDamage:
+      min: 0.3
+      max: 0.7
+      canBeModified: true
+    fireCooldown:
+      base: 2
+      canBeModified: false
+    ammo:
+      base: 10
+      canBeModified: true
+    reloadTime:
+      base: 4
+      canBeModified: false
 
-    fireType: Single-Shot #single-shot, full-auto or charge
-    bulletType: hit-scan #projectile/beam or hit-scan. explosive rounds use an executor
-    fireCooldown: 2
-    fireRateCanBeModified: false
     primaryFireExecutor: singleShotHitScan
     executorArgs: #extra args it might need. doesn't always have these however
       - 10.0
-    maxAmmo: 10
-    maxAmmoCanBeModified: true
-    reloadTime: 4
-  hasActiveSlot: true
-  activeChip: ScopeX4
+  activeChip:
+    hasSlot: true
+    slotted: ScopeX4
 ChargeBeamRifle:
   itemName: Charge-Beam Rifle
   itemLore:
     - a beam rifle that needs to be charged
   WeaponStats:
+    fireType: full-charge #single-shot, full-auto, full-charge or partial-charge
+    bulletType: beam #projectile/beam or hit-scan. explosive rounds use an executor
+
     defaultDamageTypes:
-      Physical:
+      Heat:
         min: 5
         max: 10
-    minBaseStatus: 0.2
-    maxBaseStatus: 0.3
-    minCriticalChance: 0.1
-    maxCriticalChance: 0.4
-    criticalCanBeModified: false
+    statusChance:
+      min: 0.2
+      max: 0.3
+      canBeModified: false
+    criticalChance:
+      base: 0.4
+      canBeModified: false
+    criticalDamage:
+      min: 0.3
+      max: 0.7
+      canBeModified: true
+    fireCooldown:
+      base: 2
+      canBeModified: false
+    chargeTime:
+      base: 3
+      canBeModified: false
+    ammo:
+      base: 10
+      canBeModified: true
+    reloadTime:
+      base: 4
+      canBeModified: false
 
-    fireType: charge #single-shot, full-auto or charge
-    bulletType: beam #projectile/beam or hit-scan. explosive rounds use an executor
-    fireCooldown: 2
-    chargeTime: 3
-    chargeTimeCanBeModified: false
-    fireRateCanBeModified: false
     primaryFireExecutor: fullChargeWeapon
     executorArgs: #extra args it might need. doesn't always have these however
       - singleShotBeam #executor once charged
       - 0.005 #parameters for the executor
       - 7.0
       - true
-    maxAmmo: 10
-    maxAmmoCanBeModified: true
-    reloadTime: 4
-  hasActiveSlot: true
-  activeChip: ScopeX4
+
+  activeChip:
+    hasSlot: true
+    slotted: ScopeX4
+BasicAssaultRifle:
+  itemName: Basic Assault Rifle
+  itemLore:
+    - A Basic Assault Rifle
+  WeaponStats:
+    fireType: Full-Auto
+    bulletType: projectile
+
+    defaultDamageTypes:
+      Physical:
+        min: 5
+        max: 10
+    statusChance:
+      min: 0.2
+      max: 0.3
+      canBeModified: false
+    criticalChance:
+      base: 0.4
+      canBeModified: false
+    criticalDamage:
+      min: 0.3
+      max: 0.7
+      canBeModified: true
+    fireRate:
+      base: 20
+      canBeModified: false
+    ammo:
+      base: 100
+      canBeModified: true
+    reloadTime:
+      base: 4
+      canBeModified: false
+    primaryFireExecutor: primaryCreateFullAutoProjectileTask
+  activeChip:
+    hasSlot: true
+    slotted: ScopeX10

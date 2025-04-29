@@ -1,21 +1,16 @@
 package me.Lucent.WeaponMechanics.Shooting
 
-import kotlinx.serialization.json.Json
 import me.Lucent.Events.PlayerAttackEntityEvent
 import me.Lucent.Handlers.WeaponHandlers.ScopeHandler
 import me.Lucent.RangedWeaponsTest
 import me.Lucent.WeaponMechanics.EffectManagers.BeamEffect
 import me.Lucent.WeaponMechanics.EffectManagers.HitScanEffect
-import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifiersProfiles
 import me.Lucent.Wrappers.PlayerWrapper
 import org.bukkit.Color
-import org.bukkit.NamespacedKey
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Projectile
-import org.bukkit.persistence.PersistentDataType
 import org.bukkit.util.Vector
-import kotlin.math.floor
 
 //must return true false to ensure it was successful
 
@@ -55,9 +50,7 @@ object ActiveExecutors {
     //2 args radius and damageRatio expected
     fun primarySingleShotExplosiveProjectile(plugin:RangedWeaponsTest,player: PlayerWrapper,vararg args: Any):Boolean{
         //no verification cus it is done by actual function
-        val cooldown = player.activeItemData.getWeaponYamlData()?.getConfigurationSection("WeaponStats")?.getDouble("fireCooldown") ?: return false
-        if(!(player.activeItemData.canWeaponShoot(cooldown))) return false
-
+        if(!(player.activeItemData.isPrimaryFireOnCooldown())) return false
         return singleShotExplosiveProjectile(plugin, player,*args)
     }
 
@@ -81,8 +74,7 @@ object ActiveExecutors {
     }
     //TODO bug where 2 ammo is consumed
     fun singleShotHitScan(plugin:RangedWeaponsTest,player: PlayerWrapper, vararg args:Any):Boolean{
-        val cooldown = player.activeItemData.getWeaponYamlData()?.getConfigurationSection("WeaponStats")?.getDouble("fireCooldown") ?: return false
-        if(!(player.activeItemData.canWeaponShoot(cooldown))) return false
+        if(!(player.activeItemData.isPrimaryFireOnCooldown())) return false
         if(args.size != 1) return false
         if(args[0] !is Double) return false
         val rayResult = WeaponRayTrace(plugin,player,0.1,args[0] as Double,false).shootTrace()
@@ -102,8 +94,7 @@ object ActiveExecutors {
         //default to blue for now
 
 
-        val cooldown = player.activeItemData.getWeaponYamlData()?.getConfigurationSection("WeaponStats")?.getDouble("fireCooldown") ?: return false
-        if(!(player.activeItemData.canWeaponShoot(cooldown))) return false
+        if(!(player.activeItemData.isPrimaryFireOnCooldown())) return false
 
         if(args.size != 3) return false;
         plugin.logger.info((args[0] as Double).toString())

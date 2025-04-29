@@ -13,7 +13,7 @@ import kotlin.math.abs
 class HitScanEffect(val plugin: RangedWeaponsTest, val playerWrapper: PlayerWrapper, val splatterColor:Color,val splatterLocation:Vector) {
 
     private val OFFSET:Double = 0.1 // how much the splatter is offset from the hit object
-    private val SPLATTER_RANDOM_RANGE = 0.1
+    private val SPLATTER_RANDOM_RANGE = 0.2
     private val PARTICLE_NUMBER:Int = 10
 
     //TODO can be made more efficient using only vector math

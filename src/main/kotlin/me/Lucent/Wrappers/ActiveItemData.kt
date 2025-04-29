@@ -3,17 +3,13 @@ package me.Lucent.Wrappers
 import kotlinx.serialization.json.Json
 import me.Lucent.Handlers.WeaponHandlers.ScopeHandler
 import me.Lucent.RangedWeaponsTest
-import me.Lucent.WeaponMechanics.Reloading.ReloadTask
-import me.Lucent.WeaponMechanics.Shooting.ActiveExecutors
-import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifiersProfiles
-import net.kyori.adventure.util.Services.Fallback
+import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifierProfile
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
-import org.bukkit.scheduler.BukkitScheduler
 import java.io.File
 import kotlin.math.floor
 import kotlin.time.Duration
@@ -25,6 +21,11 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
 
     var fullAutoTask:BukkitRunnable? = null;
     var chargingTask:BukkitRunnable? = null;
+
+
+    var abilityActive = false;
+
+    //TODO remove and replace with abilityActive
     var zoomedIn = false;
     var abilityCooldownTask:BukkitRunnable? = null;
     var lastShotTime:Long = 0;
@@ -108,6 +109,13 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
         player.playerUI.updateBoard();
     }
 
+    fun isPrimaryFireOnCooldown():Boolean{
+        val cooldown = getWeaponYamlData()?.getConfigurationSection("WeaponStats")?.getDouble("fireCooldown") ?: return false
+        //apply modifiers
+        return canWeaponShoot(cooldown)
+    }
+
+
     //TODO add validation that it infact has a reload time
     //TODO add in reloadTime modifer
     fun getReloadTime():Double{
@@ -118,7 +126,7 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
 
         val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
 
-        val statModifierProfiles = Json.decodeFromString<WeaponStatModifiersProfiles>(statModifierProfilesEncoded!!)
+        val statModifierProfiles = Json.decodeFromString<WeaponStatModifierProfile>(statModifierProfilesEncoded!!)
         return  (baseReloadTime)/(1+statModifierProfiles.reloadTimeModifier)
 
     }
@@ -130,7 +138,7 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
 
         val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
 
-        val statModifierProfiles = Json.decodeFromString<WeaponStatModifiersProfiles>(statModifierProfilesEncoded!!)
+        val statModifierProfiles = Json.decodeFromString<WeaponStatModifierProfile>(statModifierProfilesEncoded!!)
 
 
         val baseMaxAmmo = weaponData!!.getConfigurationSection("WeaponStats")!!.getInt("maxAmmo")

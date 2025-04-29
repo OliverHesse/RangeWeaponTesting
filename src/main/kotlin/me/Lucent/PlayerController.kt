@@ -8,6 +8,7 @@ import me.Lucent.WeaponMechanics.Shooting.ActiveExecutors
 import me.Lucent.WeaponMechanics.Shooting.FullAutoFireTask
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.YamlConfiguration
@@ -121,6 +122,7 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
     }
     @EventHandler
     fun onPlayerJoin(e:PlayerJoinEvent){
+        e.player.gameMode = GameMode.SURVIVAL
         e.player.inventory.clear()
         val itemsToGivePlayer = listOf(
             "BasicGrenadeLauncher",
@@ -129,7 +131,7 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
             "HitScanRifle",
             "ChargeBeamRifle",)
         for (item in itemsToGivePlayer){
-            e.player.inventory.addItem(plugin.createCustomItem(item))
+            e.player.inventory.addItem(plugin.weaponMaker.generateRangedWeapon(item)!!)
         }
 
         //makes a new wrapper
