@@ -1,9 +1,7 @@
 package me.Lucent.Wrappers
 
-import kotlinx.serialization.json.Json
 import me.Lucent.Handlers.WeaponHandlers.ScopeHandler
 import me.Lucent.RangedWeaponsTest
-import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifierProfile
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
@@ -11,7 +9,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
 import java.io.File
-import kotlin.math.floor
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -19,15 +16,20 @@ import kotlin.time.Duration.Companion.seconds
 class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
 
 
-    var fullAutoTask:BukkitRunnable? = null;
-    var chargingTask:BukkitRunnable? = null;
+    var fullAutoTask:RunnableWrapper? = null;
+    var chargingTask:RunnableWrapper? = null;
 
 
-    var abilityActive = false;
+
+    //string is weapon id Long is last used
+    var activeChipCooldownTracker = mutableMapOf<String,Long>()
+    var activeChipTaskTracker = mutableMapOf<String,Long>()
+    var activeChipActiveTracker = mutableMapOf<String,Long>()
+
 
     //TODO remove and replace with abilityActive
     var zoomedIn = false;
-    var abilityCooldownTask:BukkitRunnable? = null;
+    var abilityCooldownTask:RunnableWrapper? = null;
     var lastShotTime:Long = 0;
     var lastAbilityUsed:Long = 0;
 
@@ -39,35 +41,45 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
     }
 
     //TODO change to just do time comparison
-    fun isAbilityOnCooldown():Boolean{
-
-        if(abilityCooldownTask  == null) return false;
-        if(abilityCooldownTask!!.isCancelled) {abilityCooldownTask = null; return false};
+    fun isActiveChipOnCooldown():Boolean{
 
 
-        return  true
+        return  !canActiveChipBeUsed(plugin.chipDataHandler.getChipCooldown(getItemStack()))
 
     }
 
 
+
     //assumed to be in seconds
-    fun canAbilityBeUsed(cooldown: Double):Boolean{
-        val timeElapsed:Duration = (System.currentTimeMillis()-lastAbilityUsed).milliseconds;
+    fun canActiveChipBeUsed(cooldown: Double):Boolean{
+        //if it is not in there it can be used
+        val lastUsed = activeChipCooldownTracker[plugin.weaponDataHandler.getUniqueId(getItemStack())]
+            ?: return true
+        val timeElapsed:Duration = (System.currentTimeMillis()-lastUsed).milliseconds;
         return timeElapsed > cooldown.seconds
 
     }
     //assumed to be in seconds
     fun canWeaponShoot(cooldown:Double):Boolean{
         val timeElapsed:Duration = (System.currentTimeMillis()-lastShotTime).milliseconds;
-        plugin.logger.info(timeElapsed.toString())
-        plugin.logger.info((timeElapsed > cooldown.seconds).toString())
         return timeElapsed > cooldown.seconds
     }
 
+    fun hasActiveChipSlot():Boolean{
+        return plugin.weaponDataHandler.hasActiveChipSlot(getItemStack())
+    }
 
+    fun getActiveChipId():String?{
+        return plugin.chipDataHandler.getActiveChipId(getItemStack())
+    }
 
-    fun abilityUsed(){
-        lastAbilityUsed = System.currentTimeMillis();
+    fun useActiveChip():Boolean{
+        return plugin.chipDataHandler.runActiveChip(getActiveChipId() ?: "",player)
+    }
+
+    fun activeChipUsed(){
+        val itemID = plugin.weaponDataHandler.getUniqueId(getItemStack()) ?: return
+        activeChipCooldownTracker[itemID] = System.currentTimeMillis();
     }
     fun weaponShot(){
         lastShotTime = System.currentTimeMillis();
@@ -79,7 +91,7 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
         if(fullAutoTask == null) return false;
 
 
-        if(fullAutoTask!!.isCancelled){
+        if(fullAutoTask!!.isCancelled()){
             fullAutoTask = null;
             return false
         }
@@ -90,7 +102,7 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
         if(chargingTask == null) return false;
 
 
-        if(chargingTask!!.isCancelled){
+        if(chargingTask!!.isCancelled()){
             chargingTask = null;
             return false
         }
@@ -110,47 +122,37 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
     }
 
     fun isPrimaryFireOnCooldown():Boolean{
-        val cooldown = getWeaponYamlData()?.getConfigurationSection("WeaponStats")?.getDouble("fireCooldown") ?: return false
+        val cooldown = getFireCooldown()
         //apply modifiers
         return canWeaponShoot(cooldown)
     }
 
 
-    //TODO add validation that it infact has a reload time
-    //TODO add in reloadTime modifer
+    //wrappers to the weapon data handler
     fun getReloadTime():Double{
-        val weaponData = getWeaponYamlData();
+        return plugin.weaponDataHandler.getReloadTime(getItemStack());
+    }
 
-        val baseReloadTime = weaponData!!.getConfigurationSection("WeaponStats")!!.getDouble("reloadTime")
-        val container =  getItemStack().itemMeta.persistentDataContainer;
+    fun getMaxAmmo():Int{
+        return plugin.weaponDataHandler.getTotalAmmo(getItemStack());
+    }
 
-        val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
+    fun getChargeTime():Double{
+        return  plugin.weaponDataHandler.getChargeTime(getItemStack())
+    }
 
-        val statModifierProfiles = Json.decodeFromString<WeaponStatModifierProfile>(statModifierProfilesEncoded!!)
-        return  (baseReloadTime)/(1+statModifierProfiles.reloadTimeModifier)
-
+    fun getFireCooldown():Double{
+        return  plugin.weaponDataHandler.getFireCooldown(getItemStack());
+    }
+    fun getFireRate():Double{
+        return  plugin.weaponDataHandler.getFireRate(getItemStack())
     }
     //TODO add validation that it is infact a weapon with ammo
-    fun getWeaponMaxAmmo():Int{
-        val weaponData = player.activeItemData.getWeaponYamlData()
 
-        val container =  player.activeItemData.getItemStack().itemMeta.persistentDataContainer;
-
-        val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
-
-        val statModifierProfiles = Json.decodeFromString<WeaponStatModifierProfile>(statModifierProfilesEncoded!!)
-
-
-        val baseMaxAmmo = weaponData!!.getConfigurationSection("WeaponStats")!!.getInt("maxAmmo")
-        val canModify = weaponData.getConfigurationSection("WeaponStats")!!.getBoolean("maxAmmoCanBeModified")
-
-        if(canModify) return  floor(baseMaxAmmo*(1+statModifierProfiles.totalAmmoModifier)).toInt()
-        return baseMaxAmmo
-    }
     //TODO add some validation
     fun getAmmoLeft():Int{
         return getItemStack().itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"ammoLeft"),
-            PersistentDataType.INTEGER)!!
+            PersistentDataType.INTEGER) ?: 0
 
     }
 
@@ -198,7 +200,7 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
         }
 
         lastShotTime = 0;
-        lastAbilityUsed = 0;
+
     }
 
 

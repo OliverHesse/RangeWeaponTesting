@@ -10,5 +10,4 @@ data class WeaponStatProfile(
     val statusChance:Double,
     val criticalChance:Double,
     val criticalDamage:Double,
-
 )

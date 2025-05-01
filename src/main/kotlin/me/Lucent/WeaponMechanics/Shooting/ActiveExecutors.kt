@@ -6,6 +6,7 @@ import me.Lucent.RangedWeaponsTest
 import me.Lucent.WeaponMechanics.EffectManagers.BeamEffect
 import me.Lucent.WeaponMechanics.EffectManagers.HitScanEffect
 import me.Lucent.Wrappers.PlayerWrapper
+import me.Lucent.Wrappers.RunnableWrappers.GeneralWrapper
 import org.bukkit.Color
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.LivingEntity
@@ -33,19 +34,22 @@ object ActiveExecutors {
         if(args[0] !is String) return  false
 
         val task = FullChargeWeaponTask(plugin,player,args[0] as String,*args.drop(1).toTypedArray())
-        player.activeItemData.chargingTask = task
-        player.activeItemData.chargingTask!!.runTaskTimer(plugin,0,1);
+        player.activeItemData.chargingTask = GeneralWrapper(plugin,player,task)
+        player.activeItemData.chargingTask!!.task.runTaskTimer(plugin,0,1);
         return true
     }
 
 
     fun primaryCreateFullAutoProjectileTask(plugin:RangedWeaponsTest,player:PlayerWrapper, vararg args:Any):Boolean{
 
-        player.activeItemData.fullAutoTask = FullAutoFireTask(plugin,player)
-        player.activeItemData.fullAutoTask!!.runTaskTimer(plugin,0,1)
+        player.activeItemData.fullAutoTask = GeneralWrapper(plugin,player,FullAutoFireTask(plugin,player))
+        player.activeItemData.fullAutoTask!!.task.runTaskTimer(plugin,0,1)
 
         return true
     }
+
+    fun singleShotProjectile(){}
+
     //calls SingleShotExplosiveProjectile but has some extra verification
     //2 args radius and damageRatio expected
     fun primarySingleShotExplosiveProjectile(plugin:RangedWeaponsTest,player: PlayerWrapper,vararg args: Any):Boolean{
@@ -53,9 +57,9 @@ object ActiveExecutors {
         if(!(player.activeItemData.isPrimaryFireOnCooldown())) return false
         return singleShotExplosiveProjectile(plugin, player,*args)
     }
-
+    //TODO modfiy to work properly as explosive
     fun singleShotExplosiveProjectile(plugin:RangedWeaponsTest, player: PlayerWrapper, vararg args:Any):Boolean{
-        plugin.logger.info(args[0].toString())
+
         //verification
         if(args.size != 2) return false
         if(!(args[0] is Double && args[1] is Double)) return  false
@@ -63,8 +67,9 @@ object ActiveExecutors {
 
 
         val snowball: Projectile = player.player.world.spawnEntity(player.player.eyeLocation,EntityType.SNOWBALL) as Projectile
-        snowball.velocity = player.player.location.direction.multiply(1.5);
+        snowball.velocity = player.player.location.direction.multiply(2);
         snowball.shooter = player.player;
+
 
         //TODO make a bit safer...
         player.activeItemData.reduceWeaponAmmo()
@@ -97,9 +102,7 @@ object ActiveExecutors {
         if(!(player.activeItemData.isPrimaryFireOnCooldown())) return false
 
         if(args.size != 3) return false;
-        plugin.logger.info((args[0] as Double).toString())
-        plugin.logger.info((args[1] as Double).toString())
-        plugin.logger.info((args[2] as Boolean).toString())
+
 
         if(args[0] !is Double || args[1] !is Double || args[2] !is Boolean) return  false
 
@@ -126,11 +129,10 @@ object ActiveExecutors {
             val attackEvent = PlayerAttackEntityEvent(plugin,player,player.activeItemData.getItemStack(),result.hitEntity!!)
             attackEvent.callEvent()
             if(attackEvent.cancelled) continue
-            plugin.logger.info("Entity of name ${result.hitEntity!!.name} was attacked using a beam weapon")
+
             //damage calculations not done here
         }
-        plugin.logger.info(playerLoc.distance(furthest).toString())
-        plugin.logger.info("hit something $targetHit")
+
         var distance = playerLoc.distance(furthest)
         //it was only null results
         if(!targetHit) distance = args[1] as Double
@@ -144,11 +146,11 @@ object ActiveExecutors {
 
     //TODO fix bug where there is a delay
     fun scope(plugin:RangedWeaponsTest,player: PlayerWrapper, vararg args:Any):Boolean{
-        plugin.logger.info("scoping in")
+
         if(args.size != 1) return false
-        plugin.logger.info("args correct")
+
         val asDouble:Double = args[0] as Double
-        plugin.logger.info("converted to double")
+
 
         if(player.activeItemData.zoomedIn) ScopeHandler.zoomOut(player);
         else ScopeHandler.zoomIn(player,asDouble.toFloat())

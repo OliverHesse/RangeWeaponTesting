@@ -1,15 +1,9 @@
 package me.Lucent
 
 
-import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerAbilities
 import me.Lucent.WeaponMechanics.Reloading.ReloadTask
 import me.Lucent.WeaponMechanics.Shooting.ActiveExecutors
-import me.Lucent.WeaponMechanics.Shooting.FullAutoFireTask
-import net.kyori.adventure.text.Component
-import org.bukkit.Bukkit
 import org.bukkit.GameMode
-import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.event.EventHandler
@@ -20,7 +14,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.persistence.PersistentDataType
 import java.io.File
 
@@ -30,7 +24,9 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
 
     @EventHandler
     fun primaryFireUsedEventCheck(e:PlayerInteractEvent){
-        if(e.action != Action.RIGHT_CLICK_AIR && e.action != Action.RIGHT_CLICK_BLOCK) return
+        if(e.hand!! == EquipmentSlot.OFF_HAND) return
+
+        if(!(e.action == Action.RIGHT_CLICK_AIR || e.action == Action.RIGHT_CLICK_BLOCK)) return
         plugin.logger.info("player tried to use primary fire")
         val wrappedPlayer = PlayerWrapperHolder.getPlayerWrapper(plugin,e.player);
         if(!wrappedPlayer.isItemEquip()) return;
@@ -71,34 +67,24 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
     //might make 1 for abilities and 1 for primary fire
     @EventHandler
     fun abilityUsedEventCheck(e:PlayerInteractEvent){
+        if(e.hand!! == EquipmentSlot.OFF_HAND) return
         if(e.action != Action.LEFT_CLICK_AIR && e.action != Action.LEFT_CLICK_BLOCK) return
         plugin.logger.info("interact event called")
         val wrappedPlayer = PlayerWrapperHolder.getPlayerWrapper(plugin,e.player);
         if(!wrappedPlayer.isItemEquip()) return;
         val itemStack = wrappedPlayer.activeItemData.getItemStack()
 
-        val weaponData = wrappedPlayer.activeItemData.getWeaponYamlData() ?: return;
-        plugin.logger.info("weapon data retrieved")
 
         //weapon does not have an active slot
-        if(!weaponData.getBoolean("hasActiveSlot")) return
-        plugin.logger.info("item has active slot")
-
-        if(wrappedPlayer.activeItemData.isAbilityOnCooldown()) return;
-        plugin.logger.info("ability is not on cooldown")
-        //get executor
-
-        val chipId = itemStack.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"activeChip"), PersistentDataType.STRING)!!
-
-        val chipData = YamlConfiguration.loadConfiguration(File(plugin.dataFolder,"/ActiveChips.yml")).getConfigurationSection(chipId) ?: return
-        plugin.logger.info("got chip data")
-        val executor = chipData.getString("executor")
-        val args = chipData.getList("executorArgs") ?: listOf<Any>()
-        //TODO modify to add args
-        val status = ActiveExecutors.executorNameToFunction[executor]!!.call(plugin,wrappedPlayer,args.toTypedArray())
+        if(!wrappedPlayer.activeItemData.hasActiveChipSlot()) return
+        plugin.logger.info("has active chip")
+        //TODO bug is here
+        if(wrappedPlayer.activeItemData.isActiveChipOnCooldown()) return;
+        plugin.logger.info("not on cooldown")
+        val status = wrappedPlayer.activeItemData.useActiveChip();
 
         //used for cooldown checks
-        if(status) wrappedPlayer.activeItemData.abilityUsed();
+        if(status) wrappedPlayer.activeItemData.activeChipUsed();
 
 
 
@@ -122,7 +108,7 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
     }
     @EventHandler
     fun onPlayerJoin(e:PlayerJoinEvent){
-        e.player.gameMode = GameMode.SURVIVAL
+        e.player.gameMode = GameMode.CREATIVE
         e.player.inventory.clear()
         val itemsToGivePlayer = listOf(
             "BasicGrenadeLauncher",
@@ -131,7 +117,7 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
             "HitScanRifle",
             "ChargeBeamRifle",)
         for (item in itemsToGivePlayer){
-            e.player.inventory.addItem(plugin.weaponMaker.generateRangedWeapon(item)!!)
+            e.player.inventory.addItem(plugin.weaponDataHandler.generateRangedWeapon(item)!!)
         }
 
         //makes a new wrapper

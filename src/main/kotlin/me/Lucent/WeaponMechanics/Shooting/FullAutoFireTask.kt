@@ -16,43 +16,19 @@ import kotlin.math.floor
 class FullAutoFireTask(val plugin:RangedWeaponsTest,val player:PlayerWrapper): BukkitRunnable() {
     var delayedRounds:Double = 0.0;
     var roundsPerTick:Double = 0.0;
-    var canModify:Boolean = false;
-    init {
-        //TODO update
-
-        plugin.logger.info("STARING FULL AUTO")
-        val weaponData = player.activeItemData.getWeaponYamlData();
-        val fireRate = weaponData?.getConfigurationSection("WeaponStats")?.getDouble("fireRate")!!
-        val canBeModified = weaponData.getConfigurationSection("WeaponStats")?.getBoolean("fireRateCanBeModified")!!
 
 
-        roundsPerTick = fireRate/20.0
-        canModify = canBeModified;
-
-    }
-    fun calculateRoundsThisTick():Double{
-        if(!canModify) return roundsPerTick
-        val container =  player.activeItemData.getItemStack().itemMeta.persistentDataContainer;
-
-        val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
-
-        val statModifierProfiles = Json.decodeFromString<WeaponStatModifierProfile>(statModifierProfilesEncoded!!)
-
-        //TODO apply fire rate buffs
-        return 0.0
-    }
 
 
     override fun run() {
 
         if(ShootHandler.continueFullAuto(player)){
             //TODO make this work with all weapon types
-            roundsPerTick = calculateRoundsThisTick();
+            roundsPerTick = plugin.weaponDataHandler.getFireRate(player.activeItemData.getItemStack())/20.0
             delayedRounds = (delayedRounds+roundsPerTick)- floor(delayedRounds+roundsPerTick)
             val numberOfRounds :Int = (delayedRounds+roundsPerTick).toInt()
             if(numberOfRounds == 0) return;
-            plugin.logger.info("number of rounds = $numberOfRounds")
-            plugin.logger.info("snowball location ${player.player.eyeLocation}")
+
             for(i in 1..numberOfRounds){
                 val snowball:Projectile= player.player.world.spawnEntity(player.player.eyeLocation,EntityType.SNOWBALL) as Projectile
                 snowball.velocity = player.player.location.direction.multiply(1.5);

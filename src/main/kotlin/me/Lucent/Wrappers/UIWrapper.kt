@@ -39,8 +39,8 @@ class UIWrapper(val plugin:RangedWeaponsTest,val playerWrapper: PlayerWrapper) {
 
 
         if(playerWrapper.activeItemData.getItemStack().type == Material.AIR) return
-
-        lastAmmoScoreString = "◆ ${playerWrapper.activeItemData.getAmmoLeft()}/${playerWrapper.activeItemData.getWeaponMaxAmmo()}"
+        if(playerWrapper.activeItemData.getMaxAmmo() == 0) return
+        lastAmmoScoreString = "◆ ${playerWrapper.activeItemData.getAmmoLeft()}/${playerWrapper.activeItemData.getMaxAmmo()}"
         statsObjective.getScore(lastAmmoScoreString).score = 0
     }
 

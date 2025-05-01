@@ -12,3 +12,9 @@ ScopeX8:
     - 8.0
   effect: zooms in x8 times
   cooldown: 0
+ScopeX10:
+    equipmentTag: rangedWeapon
+    executor: scope
+    executorArgs:
+      - 10.0
+    cooldown: 0

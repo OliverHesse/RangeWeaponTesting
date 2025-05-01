@@ -34,7 +34,7 @@ object ScopeHandler {
              player.player.allowFlight,
              player.player.gameMode == GameMode.CREATIVE,
              player.player.flySpeed,
-             player.player.walkSpeed
+             player.player.walkSpeed/2
          )
 
          PacketEvents.getAPI().playerManager.sendPacket(player.player,fovChange)

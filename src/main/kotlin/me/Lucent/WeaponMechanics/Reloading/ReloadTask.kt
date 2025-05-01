@@ -23,7 +23,7 @@ class ReloadTask(private val plugin: RangedWeaponsTest, private val player: Play
 
     init {
             finalReloadTimeTicks =  floor(player.activeItemData.getReloadTime()*20).toInt()
-            maxAmmo = player.activeItemData.getWeaponMaxAmmo()
+            maxAmmo = player.activeItemData.getMaxAmmo()
 
 
             tickPerBoxChar = (finalReloadTimeTicks/RELOAD_BAR_BOX_NUMBER).toDouble();
@@ -37,7 +37,8 @@ class ReloadTask(private val plugin: RangedWeaponsTest, private val player: Play
 
         if(ticksElapsed >= finalReloadTimeTicks){
             //set ammo
-            player.activeItemData.setWeaponAmmo(player.activeItemData.getWeaponMaxAmmo());
+            player.activeItemData.setWeaponAmmo(player.activeItemData.getMaxAmmo());
+            plugin.logger.info("FINISHED RELOADING")
             val loadingBarString = "["+FILLED_SQUARE_CHAR.repeat(RELOAD_BAR_BOX_NUMBER)+"]"
             player.player.sendActionBar(Component.text(loadingBarString).color(TextColor.color(249, 255, 74)))
             this.cancel()
@@ -47,9 +48,7 @@ class ReloadTask(private val plugin: RangedWeaponsTest, private val player: Play
 
 
         if(ticksElapsed>tickPerBoxChar*(totalBoxesElapsed+1)) totalBoxesElapsed += 1
-        plugin.logger.info("this should not be here")
-        plugin.logger.info(ticksElapsed.toString());
-        plugin.logger.info(finalReloadTimeTicks.toString())
+
         val loadingBarString = "["+FILLED_SQUARE_CHAR.repeat(totalBoxesElapsed)+EMPTY_SQUARE_CHAR.repeat(RELOAD_BAR_BOX_NUMBER-totalBoxesElapsed)+"]"
         player.player.sendActionBar(Component.text(loadingBarString).color(TextColor.color(249, 255, 74)))
         ticksElapsed += 1

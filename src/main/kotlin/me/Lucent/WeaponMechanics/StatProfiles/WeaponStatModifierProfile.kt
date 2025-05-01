@@ -10,13 +10,13 @@ class WeaponStatModifierProfile(){
     //global is for bonuses applied to all weapons
     // damageType -> multiplier
     //critical damage is a type
-    val damageMultipliers = mapOf<String,Double>()
+    val damageMultipliers = mutableMapOf<String,Double>()
     //applied before all multipliers
-    val baseDamageBonus = mapOf<String,Double>()
+    val baseDamageBonus = mutableMapOf<String,Double>()
 
     // for example fire damage deals 120% of original damage
-    val finalDamageMultipliers = mapOf<String,List<Double>>()
-    val finalDamageBonus = mapOf<String,Double>()
+    val finalDamageMultipliers = mutableMapOf<String,List<Double>>()
+    val finalDamageBonus = mutableMapOf<String,Double>()
 
     var statusChanceMultiplier:Double = 0.0
     var baseStatusChanceBonus: Double = 0.0
@@ -43,5 +43,8 @@ class WeaponStatModifierProfile(){
     var baseCriticalDamageBonus:Double = 0.0;
     var criticalDamageMultiplier:Double = 0.0
     var finalCriticalDamageBonus:Double = 0.0
+
+
+
 
 }

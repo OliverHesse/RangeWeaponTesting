@@ -16,14 +16,30 @@ import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.text.DecimalFormat
+import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
+import javax.naming.Name
 import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.math.round
+import kotlin.uuid.Uuid
 
 
 //TODO improve to work with melee weapons
 class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfiguration){
+
+    fun getUniqueId(item: ItemStack):String?{
+        return item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"uniqueId"),PersistentDataType.STRING)
+    }
+
+    fun hasActiveChipSlot(item:ItemStack):Boolean{
+        val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return false
+        return dataFile.getConfigurationSection(itemId)?.getConfigurationSection("activeChip")?.getBoolean("hasSlot") ?: false
+    }
+
+    fun generateUUIDString():String{
+        return UUID.randomUUID().toString()
+    }
 
     //TODO add some text formating
     fun writeWeaponLore(item: ItemStack){
@@ -69,9 +85,15 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
         return Json.decodeFromString<WeaponStatProfile>(encodedString)
     }
 
-    private fun getModifierProfile(item:ItemStack):WeaponStatModifierProfile?{
+    fun getModifierProfile(item:ItemStack):WeaponStatModifierProfile?{
         val encodedString = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING) ?: return null
         return Json.decodeFromString<WeaponStatModifierProfile>(encodedString)
+
+    }
+
+    fun canModify(item:ItemStack,stat:String):Boolean{
+        val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return false
+        return dataFile.getConfigurationSection(itemId)?.getConfigurationSection("WeaponStats")?.getConfigurationSection(stat)?.getBoolean("canModify") ?: false
 
     }
 
@@ -81,7 +103,7 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
         val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return 0.0
         val statModifierProfile = getModifierProfile(item) ?: return 0.0
         val baseChance = getStatProfile(item)?.criticalChance ?: return 0.0
-
+        if(!canModify(item,"criticalChance")) return baseChance
         return (baseChance+statModifierProfile.baseCriticalChanceBonus)*(1+statModifierProfile.criticalChanceMultiplier)+statModifierProfile.finalCriticalChanceBonus
 
     }
@@ -89,15 +111,16 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
         val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return 0.0
         val statModifierProfile = getModifierProfile(item) ?: return 0.0
         val baseDamage = getStatProfile(item)?.criticalDamage ?: return 0.0
-
+        if(!canModify(item,"criticalDamage")) return baseDamage
         return (baseDamage+statModifierProfile.baseCriticalDamageBonus)*(1+statModifierProfile.criticalDamageMultiplier)+statModifierProfile.finalCriticalDamageBonus
     }
     fun getStatusChance(item:ItemStack):Double{
-        plugin.logger.info("${getStatProfile(item)}")
+
         val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return 0.0
         val statModifierProfile = getModifierProfile(item) ?: return 0.0
         val baseStatus = getStatProfile(item)?.statusChance ?: return 0.0
-        plugin.logger.info("TEST");
+        if(!canModify(item,"statusChance")) return baseStatus
+
         return (baseStatus+statModifierProfile.baseStatusChanceBonus)*(1+statModifierProfile.statusChanceMultiplier)+statModifierProfile.finalStatusChanceBonus
     }
 
@@ -105,7 +128,7 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
         val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return 0.0
         val statModifierProfile = getModifierProfile(item) ?: return 0.0
         val baseRate = dataFile.getConfigurationSection(itemId)?.getConfigurationSection("WeaponStats")?.getConfigurationSection("fireRate")?.getDouble("base") ?: return 0.0
-
+        if(!canModify(item,"fireRate")) return baseRate
         return baseRate*(1+statModifierProfile.fireRateModifier)
     }
 
@@ -113,7 +136,7 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
         val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return 0.0
         val statModifierProfile = getModifierProfile(item) ?: return 0.0
         val baseCooldown = dataFile.getConfigurationSection(itemId)?.getConfigurationSection("WeaponStats")?.getConfigurationSection("fireCooldown")?.getDouble("base") ?: return 0.0
-
+        if(!canModify(item,"fireCooldown")) return baseCooldown
         return baseCooldown/(1+statModifierProfile.fireCooldownModifier)
     }
 
@@ -121,7 +144,7 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
         val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return 0.0
         val statModifierProfile = getModifierProfile(item) ?: return 0.0
         val baseTime = dataFile.getConfigurationSection(itemId)?.getConfigurationSection("WeaponStats")?.getConfigurationSection("chargeTime")?.getDouble("base") ?: return 0.0
-
+        if(!canModify(item,"chargeTime")) return baseTime
         return baseTime/(1+statModifierProfile.chargeTimeModifier)
     }
 
@@ -132,20 +155,19 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
         val statSection = dataFile.getConfigurationSection(itemId)?.getConfigurationSection("WeaponStats")?.getConfigurationSection("ammo") ?: return 0
 
         val baseMaxAmmo = statSection.getInt("base")
-        val canModify = statSection.getBoolean("canBeModified")
-        if(canModify) return  floor(baseMaxAmmo*(1+statModifierProfile.totalAmmoModifier)).toInt()
+        if(canModify(item,"ammo")) return  floor(baseMaxAmmo*(1+statModifierProfile.totalAmmoModifier)).toInt()
         return baseMaxAmmo
     }
 
     //reload time = (base time)/(1+modifier)
-    fun getTotalReloadTime(item:ItemStack):Double {
+    fun getReloadTime(item:ItemStack):Double {
         val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return 0.0
         val statModifierProfile = getModifierProfile(item) ?: return 0.0
         val baseTime = dataFile.getConfigurationSection(itemId)?.getConfigurationSection("WeaponStats")?.getConfigurationSection("reloadTime")?.getDouble("base") ?: return 0.0
 
-        return baseTime/(1+statModifierProfile.reloadTimeModifier)
+        if(canModify(item,"reloadTime"))return baseTime/(1+statModifierProfile.reloadTimeModifier)
 
-
+        return baseTime
     }
 
     fun getDamageOfType(item: ItemStack,damageType: String):Double {
@@ -199,15 +221,16 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
 
 
             it.persistentDataContainer.set(NamespacedKey(plugin,"id"), PersistentDataType.STRING,itemId)
-
+            it.persistentDataContainer.set(NamespacedKey(plugin,"uniqueId"), PersistentDataType.STRING,generateUUIDString())
             //Create base stats
             val statMap = mutableMapOf<String,Double>()
             val weaponStats = weaponConfig.getConfigurationSection("WeaponStats")!!
 
             val damageStats = weaponStats.getConfigurationSection("defaultDamageTypes")!!
             plugin.logger.info("damage types on weapon ${damageStats.getValues(false)}")
-            for(damageType in listOf("Physical","Heat","Radiation","Chill","Electric")){
-
+            //listOf("Physical","Heat","Radiation","Chill","Electric")
+            for(damageType in damageStats.getKeys(false)){
+                if(damageType == null) continue
                 statMap[damageType] = generateStat(damageStats.getConfigurationSection(damageType),1)
 
             }

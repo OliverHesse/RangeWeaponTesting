@@ -25,15 +25,9 @@ class FullChargeWeaponTask(val plugin:RangedWeaponsTest,val player: PlayerWrappe
     init {
         //for some reason i cant call args from other methods
         functionArgs = args
-        val weaponData = player.activeItemData.getWeaponYamlData()
-        val baseReloadTime = weaponData!!.getConfigurationSection("WeaponStats")!!.getDouble("chargeTime")
-        val container =  player.activeItemData.getItemStack().itemMeta.persistentDataContainer;
+        val chargeTime = player.activeItemData.getChargeTime()
 
-        val statModifierProfilesEncoded = container.get(NamespacedKey(plugin,"statModifierProfile"), PersistentDataType.STRING)
-
-        val statModifierProfiles = Json.decodeFromString<WeaponStatModifierProfile>(statModifierProfilesEncoded!!)
-        val finalTimeSeconds = (baseReloadTime)/(1+statModifierProfiles.chargeTimeModifier)
-        finalChargeTimeTicks = floor(finalTimeSeconds*20).toInt()
+        finalChargeTimeTicks = floor(chargeTime*20).toInt()
 
         tickPerBoxChar = (finalChargeTimeTicks/RELOAD_BAR_BOX_NUMBER).toDouble();
 
@@ -42,6 +36,7 @@ class FullChargeWeaponTask(val plugin:RangedWeaponsTest,val player: PlayerWrappe
 
     fun drawProgressBar(numberOfBoxes:Int){
         val loadingBarString = "["+FILLED_SQUARE_CHAR.repeat(numberOfBoxes)+EMPTY_SQUARE_CHAR.repeat(RELOAD_BAR_BOX_NUMBER-numberOfBoxes)+"]"
+        plugin.logger.info(loadingBarString)
         player.player.sendActionBar(Component.text(loadingBarString).color(TextColor.color(249, 255, 74)))
     }
     override fun run() {
@@ -54,8 +49,9 @@ class FullChargeWeaponTask(val plugin:RangedWeaponsTest,val player: PlayerWrappe
         if(ticksElapsed >= finalChargeTimeTicks){
 
             drawProgressBar(RELOAD_BAR_BOX_NUMBER)
-            this.cancel()
+            plugin.logger.info("finished charging")
             ActiveExecutors.executorNameToFunction[shootFunctionName]!!.call(plugin,player,functionArgs)
+            this.cancel()
             return
         }
         if(ticksElapsed>tickPerBoxChar*(totalBoxesElapsed+1)) totalBoxesElapsed += 1

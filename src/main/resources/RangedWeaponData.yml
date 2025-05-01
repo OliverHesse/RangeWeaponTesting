@@ -17,23 +17,23 @@ BasicGrenadeLauncher:
     statusChance:
       min: 0.2
       max: 0.3
-      canBeModified: false
+      canModify: false
     criticalChance:
       base: 0.4
-      canBeModified: false
+      canModify: false
     criticalDamage:
       min: 0.3
       max: 0.7
-      canBeModified: true
+      canModify: true
     fireCooldown:
       base: 2
-      canBeModified: false
+      canModify: false
     ammo:
       base: 10
-      canBeModified: true
+      canModify: true
     reloadTime:
       base: 4
-      canBeModified: false
+      canModify: false
 
 
     primaryFireExecutor: primarySingleShotExplosiveProjectile
@@ -41,9 +41,9 @@ BasicGrenadeLauncher:
       - 2.5 #radius
       - 0.3 #origional damage percentage
 
-
-  hasActiveSlot: true
-  activeChip: ScopeX4
+  activeChip:
+    hasSlot: true
+    slotted: ScopeX4
 InstantBeamGun:
   itemName: Instant Beam Gun
   itemLore:
@@ -59,23 +59,23 @@ InstantBeamGun:
     statusChance:
       min: 0.2
       max: 0.3
-      canBeModified: false
+      canModify: false
     criticalChance:
       base: 0.4
-      canBeModified: false
+      canModify: false
     criticalDamage:
       min: 0.3
       max: 0.7
-      canBeModified: true
+      canModify: true
     fireCooldown:
       base: 2
-      canBeModified: false
+      canModify: false
     ammo:
       base: 10
-      canBeModified: true
+      canModify: true
     reloadTime:
       base: 4
-      canBeModified: false
+      canModify: false
 
 
 
@@ -87,7 +87,9 @@ InstantBeamGun:
 
   activeChip:
     hasSlot: true
+    fixedSlot: true
     slotted: ScopeX4
+
 HitScanRifle:
   itemName: Hit-scan rifle
   itemLore:
@@ -106,23 +108,23 @@ HitScanRifle:
         max: 10
     statusChance:
       base: 0.8
-      canBeModified: false
+      canModify: false
     criticalChance:
       base: 0.4
-      canBeModified: false
+      canModify: false
     criticalDamage:
       min: 0.3
       max: 0.7
-      canBeModified: true
+      canModify: true
     fireCooldown:
       base: 2
-      canBeModified: false
+      canModify: false
     ammo:
       base: 10
-      canBeModified: true
+      canModify: true
     reloadTime:
       base: 4
-      canBeModified: false
+      canModify: false
 
     primaryFireExecutor: singleShotHitScan
     executorArgs: #extra args it might need. doesn't always have these however
@@ -145,26 +147,26 @@ ChargeBeamRifle:
     statusChance:
       min: 0.2
       max: 0.3
-      canBeModified: false
+      canModify: false
     criticalChance:
       base: 0.4
-      canBeModified: false
+      canModify: false
     criticalDamage:
       min: 0.3
       max: 0.7
-      canBeModified: true
+      canModify: true
     fireCooldown:
       base: 2
-      canBeModified: false
+      canModify: false
     chargeTime:
       base: 3
-      canBeModified: false
+      canModify: false
     ammo:
       base: 10
-      canBeModified: true
+      canModify: true
     reloadTime:
       base: 4
-      canBeModified: false
+      canModify: false
 
     primaryFireExecutor: fullChargeWeapon
     executorArgs: #extra args it might need. doesn't always have these however
@@ -191,24 +193,25 @@ BasicAssaultRifle:
     statusChance:
       min: 0.2
       max: 0.3
-      canBeModified: false
+      canModify: false
     criticalChance:
       base: 0.4
-      canBeModified: false
+      canModify: false
     criticalDamage:
       min: 0.3
       max: 0.7
-      canBeModified: true
+      canModify: true
     fireRate:
       base: 20
-      canBeModified: false
+      canModify: false
     ammo:
       base: 100
-      canBeModified: true
+      canModify: true
     reloadTime:
       base: 4
-      canBeModified: false
+      canModify: false
     primaryFireExecutor: primaryCreateFullAutoProjectileTask
   activeChip:
     hasSlot: true
     slotted: ScopeX10
+    fixedSlot: false

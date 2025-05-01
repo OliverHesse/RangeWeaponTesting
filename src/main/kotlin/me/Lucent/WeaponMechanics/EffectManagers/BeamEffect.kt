@@ -35,7 +35,7 @@ class BeamEffect(val plugin: RangedWeaponsTest,val playerWrapper: PlayerWrapper,
 
 
         }
-        plugin.logger.info(distanceTraveled.toString())
+
     }
 
 
