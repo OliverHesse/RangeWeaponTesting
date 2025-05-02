@@ -1,8 +1,7 @@
-package me.Lucent.WeaponMechanics.EffectManagers
+package me.Lucent.Mechanics.EffectManagers
 
 import me.Lucent.RangedWeaponsTest
 import me.Lucent.Wrappers.PlayerWrapper
-import org.bukkit.Color
 
 
 /*TODO give players options to configure this

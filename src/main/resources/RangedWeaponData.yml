@@ -177,7 +177,7 @@ ChargeBeamRifle:
 
   activeChip:
     hasSlot: true
-    slotted: ScopeX4
+    slotted: HeatDamageUp+
 BasicAssaultRifle:
   itemName: Basic Assault Rifle
   itemLore:

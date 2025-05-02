@@ -1,9 +1,8 @@
-package me.Lucent.WeaponMechanics.EffectManagers
+package me.Lucent.Mechanics.EffectManagers
 
 import me.Lucent.RangedWeaponsTest
 import me.Lucent.Wrappers.PlayerWrapper
 import org.bukkit.Color
-import org.bukkit.Location
 import org.bukkit.Particle
 import org.bukkit.util.Vector
 import java.util.concurrent.ThreadLocalRandom
@@ -48,7 +47,7 @@ class HitScanEffect(val plugin: RangedWeaponsTest, val playerWrapper: PlayerWrap
         for(i in 0..PARTICLE_NUMBER){
 
             val newLocation = generateRelativeParticleDirection(dir.clone()).toLocation(originLoc.world).add(originLoc);
-            val dust = Particle.DustOptions(splatterColor,0.3f)
+            val dust = Particle.DustOptions(splatterColor,1f)
 
             newLocation.world.spawnParticle(Particle.DUST, newLocation, 0,dust)
 

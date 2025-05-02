@@ -1,10 +1,12 @@
 package me.Lucent.Wrappers
 
-import me.Lucent.Handlers.WeaponHandlers.ScopeHandler
+
 import me.Lucent.RangedWeaponsTest
+import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.entity.Item
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
@@ -19,25 +21,23 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
     var fullAutoTask:RunnableWrapper? = null;
     var chargingTask:RunnableWrapper? = null;
 
-
-
     //string is weapon id Long is last used
     var activeChipCooldownTracker = mutableMapOf<String,Long>()
-    var activeChipTaskTracker = mutableMapOf<String,Long>()
-    var activeChipActiveTracker = mutableMapOf<String,Long>()
+    var activeChipTaskTracker = mutableMapOf<String,RunnableWrapper?>()
+    var activeChipActiveTracker = mutableMapOf<String,Boolean>()
 
 
     //TODO remove and replace with abilityActive
-    var zoomedIn = false;
-    var abilityCooldownTask:RunnableWrapper? = null;
+
+
     var lastShotTime:Long = 0;
-    var lastAbilityUsed:Long = 0;
+
 
 
     var reloadTask:BukkitRunnable? = null
 
     fun getItemStack(): ItemStack {
-        return player.player.inventory.itemInMainHand;
+        return  player.player.inventory.itemInMainHand;
     }
 
     //TODO change to just do time comparison
@@ -77,12 +77,42 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
         return plugin.chipDataHandler.runActiveChip(getActiveChipId() ?: "",player)
     }
 
+    fun callPrimaryExecutor():Boolean{
+        return plugin.weaponDataHandler.callPrimaryExecutor(getItemStack(),player)
+    }
+
     fun activeChipUsed(){
         val itemID = plugin.weaponDataHandler.getUniqueId(getItemStack()) ?: return
         activeChipCooldownTracker[itemID] = System.currentTimeMillis();
     }
     fun weaponShot(){
         lastShotTime = System.currentTimeMillis();
+    }
+
+
+
+    fun isActiveChipActive():Boolean{
+
+        val id = plugin.weaponDataHandler.getUniqueId(getItemStack())
+
+        return (activeChipActiveTracker[id] ?: false)
+    }
+    fun isActiveChipTaskActive():Boolean{
+        val id = plugin.weaponDataHandler.getUniqueId(getItemStack())
+        if(activeChipTaskTracker[id] != null){
+            if(activeChipTaskTracker[id]!!.isCancelled()){
+                activeChipTaskTracker[id!!] = null
+            }
+        }
+        return activeChipTaskTracker[id] != null
+    }
+    fun setActiveChipActiveStatus(state:Boolean){
+        val id = plugin.weaponDataHandler.getUniqueId(getItemStack()) ?: return
+        activeChipActiveTracker[id] = state
+    }
+    fun setActiveChipRunnable(taskWrapper: RunnableWrapper){
+        val id = plugin.weaponDataHandler.getUniqueId(getItemStack()) ?: return
+        activeChipTaskTracker[id] = taskWrapper
     }
     //checks if it is on full auto
     //TODO check if it is currently burst firing
@@ -195,11 +225,17 @@ class ActiveItemData(val plugin:RangedWeaponsTest,val player:PlayerWrapper){
         if(reloadTask!=null) reloadTask!!.cancel()
         reloadTask = null
 
-        if(zoomedIn){
-            ScopeHandler.zoomOut(player)
+        //used for logic that breaks when main hand is empty
+        if(getItemStack().type != Material.AIR){
+            if(isActiveChipActive()){
+                //call again so it runs the turn of functionality
+                plugin.chipDataHandler.runActiveChip(plugin.chipDataHandler.getActiveChipId(getItemStack()) ?: "",player)
+
+            }
         }
 
         lastShotTime = 0;
+
 
     }
 

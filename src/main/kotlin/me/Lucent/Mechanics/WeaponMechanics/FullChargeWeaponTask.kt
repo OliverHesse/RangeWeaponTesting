@@ -1,13 +1,9 @@
-package me.Lucent.WeaponMechanics.Shooting
+package me.Lucent.Mechanics.WeaponMechanics
 
-import kotlinx.serialization.json.Json
 import me.Lucent.RangedWeaponsTest
-import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifierProfile
 import me.Lucent.Wrappers.PlayerWrapper
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
-import org.bukkit.NamespacedKey
-import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
 import kotlin.math.floor
 
@@ -36,11 +32,11 @@ class FullChargeWeaponTask(val plugin:RangedWeaponsTest,val player: PlayerWrappe
 
     fun drawProgressBar(numberOfBoxes:Int){
         val loadingBarString = "["+FILLED_SQUARE_CHAR.repeat(numberOfBoxes)+EMPTY_SQUARE_CHAR.repeat(RELOAD_BAR_BOX_NUMBER-numberOfBoxes)+"]"
-        plugin.logger.info(loadingBarString)
+
         player.player.sendActionBar(Component.text(loadingBarString).color(TextColor.color(249, 255, 74)))
     }
     override fun run() {
-        plugin.logger.info("click status: ${player.isRightClicking()}")
+
         if(!player.isRightClicking()){
             this.cancel()
             return
@@ -50,7 +46,7 @@ class FullChargeWeaponTask(val plugin:RangedWeaponsTest,val player: PlayerWrappe
 
             drawProgressBar(RELOAD_BAR_BOX_NUMBER)
             plugin.logger.info("finished charging")
-            ActiveExecutors.executorNameToFunction[shootFunctionName]!!.call(plugin,player,functionArgs)
+            plugin.activeExecutors.executorNameToFunction[shootFunctionName]!!.call(player,functionArgs)
             this.cancel()
             return
         }

@@ -1,4 +1,4 @@
-package me.Lucent.WeaponMechanics.Shooting
+package me.Lucent.Mechanics.WeaponMechanics
 
 import org.bukkit.scheduler.BukkitRunnable
 

@@ -18,3 +18,13 @@ ScopeX10:
     executorArgs:
       - 10.0
     cooldown: 0
+HeatDamageUp+:
+  equipmentTag: weapon
+  executor: applyGenericDamageTypeBuff
+  executorArgs:
+    - Heat Damage Up +
+    - Bonus
+    - Heat
+    - 100.0
+    - 5.0 #duration <=0 means infinite
+  cooldown: 10

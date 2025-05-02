@@ -1,4 +1,4 @@
-package me.Lucent.WeaponMechanics.EffectManagers
+package me.Lucent.Mechanics.EffectManagers
 
 import me.Lucent.RangedWeaponsTest
 import me.Lucent.Wrappers.PlayerWrapper

@@ -1,5 +1,6 @@
 package me.Lucent.Wrappers
 
+import me.Lucent.Handlers.PlayerStatusHandler
 import me.Lucent.RangedWeaponsTest
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -13,6 +14,7 @@ class PlayerWrapper(val plugin:RangedWeaponsTest,val player: Player) {
     var health:Double = 100.0;
     fun safeDeleteWrapper(){}
 
+    val playerStatusHandler = PlayerStatusHandler(plugin,this)
 
     val activeItemData:ActiveItemData = ActiveItemData(plugin,this)
 

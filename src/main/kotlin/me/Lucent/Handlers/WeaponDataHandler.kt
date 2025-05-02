@@ -2,9 +2,12 @@ package me.Lucent.Handlers
 
 import com.google.common.collect.MultimapBuilder
 import kotlinx.serialization.json.Json
+import me.Lucent.Enums.DamageType
+import me.Lucent.Events.UpdateWeaponLoreEvent
 import me.Lucent.RangedWeaponsTest
-import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifierProfile
-import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatProfile
+import me.Lucent.Mechanics.StatProfiles.WeaponStatModifierProfile
+import me.Lucent.Mechanics.StatProfiles.WeaponStatProfile
+import me.Lucent.Wrappers.PlayerWrapper
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
@@ -18,15 +21,24 @@ import org.bukkit.persistence.PersistentDataType
 import java.text.DecimalFormat
 import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
-import javax.naming.Name
 import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.math.round
-import kotlin.uuid.Uuid
 
 
 //TODO improve to work with melee weapons
 class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfiguration){
+
+    fun callPrimaryExecutor(item: ItemStack,wrappedPlayer:PlayerWrapper):Boolean{
+        plugin.logger.info("trying to call executor")
+        val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return false
+
+        val executor = dataFile.getConfigurationSection(itemId)?.getConfigurationSection("WeaponStats")?.getString("primaryFireExecutor") ?: return false
+        plugin.logger.info("got executor")
+        val args = dataFile.getConfigurationSection(itemId)?.getConfigurationSection("WeaponStats")?.getList("executorArgs") ?: listOf<Any>()
+        plugin.logger.info("got args")
+        return plugin.activeExecutors.executorNameToFunction[executor]!!.call(wrappedPlayer, args.toTypedArray())
+    }
 
     fun getUniqueId(item: ItemStack):String?{
         return item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"uniqueId"),PersistentDataType.STRING)
@@ -42,9 +54,13 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
     }
 
     //TODO add some text formating
-    fun writeWeaponLore(item: ItemStack){
+    fun writeWeaponLore(player:PlayerWrapper,item: ItemStack){
         val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return
         val itemName = dataFile.getConfigurationSection(itemId)?.getString("itemName") ?: return
+
+        //TODO might need some refactoring or just make an overload that has statModifier as a req
+        val statModifiers = getModifierProfile(item) ?: return
+        val updateWeaponLoreEvent = UpdateWeaponLoreEvent(player,statModifiers)
         item.editMeta {
             val name = Component.text(itemName).color(TextColor.color(255, 212, 56))
             val weapon = dataFile.getConfigurationSection(itemId)!!
@@ -56,7 +72,7 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
                 val f = DecimalFormat("0.##")
                 for(damageType in weaponStats.getKeys(false)){
                     val damageComponent = Component.text("$damageType: ").color(TextColor.color(143, 143, 143)).decoration(TextDecoration.ITALIC,false)
-                    val damageNumber = Component.text(f.format(getDamageOfType(item,damageType))).color(TextColor.color(207, 0, 0)).decoration(TextDecoration.ITALIC,false)
+                    val damageNumber = Component.text(f.format(getDamageOfType(item,DamageType.valueOf(damageType)))).color(TextColor.color(207, 0, 0)).decoration(TextDecoration.ITALIC,false)
                     add(damageComponent.append(damageNumber))
                 }
                 val statusText = Component.text("Status Chance: ").color(TextColor.color(143, 143, 143)).decoration(TextDecoration.ITALIC,false)
@@ -96,7 +112,6 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
         return dataFile.getConfigurationSection(itemId)?.getConfigurationSection("WeaponStats")?.getConfigurationSection(stat)?.getBoolean("canModify") ?: false
 
     }
-
 
 
     fun getCriticalChance(item:ItemStack):Double {
@@ -170,16 +185,16 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
         return baseTime
     }
 
-    fun getDamageOfType(item: ItemStack,damageType: String):Double {
+    fun getDamageOfType(item: ItemStack,damageType: DamageType):Double {
         //val itemId = item.itemMeta.persistentDataContainer.get(NamespacedKey(plugin,"id"), PersistentDataType.STRING) ?: return 0.0
         val statModifierProfile = getModifierProfile(item) ?: return 0.0
         val baseDamage = getStatProfile(item)?.damageTypeMap?.get(damageType) ?: return 0.0
 
-        val damageBonus = (statModifierProfile.baseDamageBonus[damageType] ?: 0.0)+(statModifierProfile.baseDamageBonus["global"] ?: 0.0)
-        val damageMultiplier = 1+(statModifierProfile.damageMultipliers[damageType] ?: 0.0)+(statModifierProfile.damageMultipliers["global"] ?: 0.0)
-        val finalDamageBonus = 1+(statModifierProfile.finalDamageBonus[damageType] ?: 0.0)+(statModifierProfile.finalDamageBonus["global"] ?: 0.0)
+        val damageBonus = (statModifierProfile.baseDamageBonus[damageType] ?: 0.0)+(statModifierProfile.baseDamageBonus[DamageType.Default] ?: 0.0)
+        val damageMultiplier = 1+(statModifierProfile.damageMultipliers[damageType] ?: 0.0)+(statModifierProfile.damageMultipliers[DamageType.Default] ?: 0.0)
+        val finalDamageBonus = 1+(statModifierProfile.finalDamageBonus[damageType] ?: 0.0)+(statModifierProfile.finalDamageBonus[DamageType.Default] ?: 0.0)
         var finalDamageMultipliers = 1.0
-        for(multiplier in (statModifierProfile.finalDamageMultipliers[damageType] ?: emptyList())+(statModifierProfile.finalDamageMultipliers["global"] ?: emptyList())){
+        for(multiplier in (statModifierProfile.finalDamageMultipliers[damageType] ?: emptyList())+(statModifierProfile.finalDamageMultipliers[DamageType.Default] ?: emptyList())){
             finalDamageMultipliers *= (1+multiplier)
         }
         return ((baseDamage+damageBonus)*damageMultiplier+finalDamageBonus)*finalDamageMultipliers
@@ -223,7 +238,7 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
             it.persistentDataContainer.set(NamespacedKey(plugin,"id"), PersistentDataType.STRING,itemId)
             it.persistentDataContainer.set(NamespacedKey(plugin,"uniqueId"), PersistentDataType.STRING,generateUUIDString())
             //Create base stats
-            val statMap = mutableMapOf<String,Double>()
+            val statMap = mutableMapOf<DamageType,Double>()
             val weaponStats = weaponConfig.getConfigurationSection("WeaponStats")!!
 
             val damageStats = weaponStats.getConfigurationSection("defaultDamageTypes")!!
@@ -231,7 +246,7 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
             //listOf("Physical","Heat","Radiation","Chill","Electric")
             for(damageType in damageStats.getKeys(false)){
                 if(damageType == null) continue
-                statMap[damageType] = generateStat(damageStats.getConfigurationSection(damageType),1)
+                statMap[DamageType.valueOf(damageType)] = generateStat(damageStats.getConfigurationSection(damageType),1)
 
             }
 
@@ -258,7 +273,6 @@ class WeaponDataHandler(val plugin: RangedWeaponsTest, val dataFile:YamlConfigur
             it.persistentDataContainer.set(NamespacedKey(plugin,"ammoLeft"), PersistentDataType.INTEGER,weaponStats.getConfigurationSection("ammo")!!.getInt("base"))
         }
 
-        writeWeaponLore(weaponBase)
         return weaponBase;
     }
 }

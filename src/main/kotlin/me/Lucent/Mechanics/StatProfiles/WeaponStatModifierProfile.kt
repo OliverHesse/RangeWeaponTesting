@@ -1,6 +1,7 @@
-package me.Lucent.WeaponMechanics.StatProfiles
+package me.Lucent.Mechanics.StatProfiles
 
 import kotlinx.serialization.Serializable
+import me.Lucent.Enums.DamageType
 
 
 //some of this will be similar to the DamageEventProfile.
@@ -10,13 +11,13 @@ class WeaponStatModifierProfile(){
     //global is for bonuses applied to all weapons
     // damageType -> multiplier
     //critical damage is a type
-    val damageMultipliers = mutableMapOf<String,Double>()
-    //applied before all multipliers
-    val baseDamageBonus = mutableMapOf<String,Double>()
+    val damageMultipliers = mutableMapOf<DamageType,Double>()
+    //flat damage bonus applied at the start
+    val baseDamageBonus = mutableMapOf<DamageType,Double>()
 
     // for example fire damage deals 120% of original damage
-    val finalDamageMultipliers = mutableMapOf<String,List<Double>>()
-    val finalDamageBonus = mutableMapOf<String,Double>()
+    val finalDamageMultipliers = mutableMapOf<DamageType,MutableList<Double>>()
+    val finalDamageBonus = mutableMapOf<DamageType,Double>()
 
     var statusChanceMultiplier:Double = 0.0
     var baseStatusChanceBonus: Double = 0.0

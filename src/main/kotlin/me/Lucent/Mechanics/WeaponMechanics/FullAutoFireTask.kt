@@ -1,15 +1,10 @@
-package me.Lucent.WeaponMechanics.Shooting
+package me.Lucent.Mechanics.WeaponMechanics
 
-import kotlinx.serialization.json.Json
-import me.Lucent.Handlers.WeaponHandlers.ShootHandler
 import me.Lucent.RangedWeaponsTest
-import me.Lucent.WeaponMechanics.Reloading.ReloadTask
-import me.Lucent.WeaponMechanics.StatProfiles.WeaponStatModifierProfile
+import me.Lucent.Mechanics.Reloading.ReloadTask
 import me.Lucent.Wrappers.PlayerWrapper
-import org.bukkit.NamespacedKey
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Projectile
-import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
 import kotlin.math.floor
 
@@ -22,7 +17,7 @@ class FullAutoFireTask(val plugin:RangedWeaponsTest,val player:PlayerWrapper): B
 
     override fun run() {
 
-        if(ShootHandler.continueFullAuto(player)){
+        if(player.isRightClicking()){
             //TODO make this work with all weapon types
             roundsPerTick = plugin.weaponDataHandler.getFireRate(player.activeItemData.getItemStack())/20.0
             delayedRounds = (delayedRounds+roundsPerTick)- floor(delayedRounds+roundsPerTick)
@@ -33,7 +28,7 @@ class FullAutoFireTask(val plugin:RangedWeaponsTest,val player:PlayerWrapper): B
                 val snowball:Projectile= player.player.world.spawnEntity(player.player.eyeLocation,EntityType.SNOWBALL) as Projectile
                 snowball.velocity = player.player.location.direction.multiply(1.5);
                 snowball.shooter = player.player;
-
+                plugin.projectileHandler.addProjectile(player.activeItemData.getItemStack(),snowball)
 
                 //handler ammo
                 player.activeItemData.reduceWeaponAmmo();

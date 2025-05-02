@@ -1,11 +1,8 @@
 package me.Lucent
 
 
-import me.Lucent.WeaponMechanics.Reloading.ReloadTask
-import me.Lucent.WeaponMechanics.Shooting.ActiveExecutors
+import me.Lucent.Mechanics.Reloading.ReloadTask
 import org.bukkit.GameMode
-import org.bukkit.NamespacedKey
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
@@ -15,8 +12,6 @@ import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.persistence.PersistentDataType
-import java.io.File
 
 class PlayerController(val plugin:RangedWeaponsTest):Listener  {
 
@@ -27,12 +22,11 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
         if(e.hand!! == EquipmentSlot.OFF_HAND) return
 
         if(!(e.action == Action.RIGHT_CLICK_AIR || e.action == Action.RIGHT_CLICK_BLOCK)) return
-        plugin.logger.info("player tried to use primary fire")
-        val wrappedPlayer = PlayerWrapperHolder.getPlayerWrapper(plugin,e.player);
-        if(!wrappedPlayer.isItemEquip()) return;
-        val itemStack = wrappedPlayer.activeItemData.getItemStack()
 
-        val weaponData = wrappedPlayer.activeItemData.getWeaponYamlData() ?: return;
+        plugin.logger.info("player tried to use primary fire")
+        val wrappedPlayer = plugin.playerWrapperHandler.getPlayerWrapper(e.player);
+        if(!wrappedPlayer.isItemEquip()) return;
+        if(plugin.weaponDataHandler.getUniqueId(wrappedPlayer.activeItemData.getItemStack()) == null) return
 
 
 
@@ -40,11 +34,9 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
 
         if(!wrappedPlayer.activeItemData.isCurrentlyFiring() && !wrappedPlayer.activeItemData.isCharging()){
             //logic here
-            val executor = weaponData.getConfigurationSection("WeaponStats")?.getString("primaryFireExecutor") ?: return
-            val args = weaponData.getConfigurationSection("WeaponStats")?.getList("executorArgs") ?: listOf<Any>()
 
 
-
+            plugin.logger.info("not currently firing")
             if (wrappedPlayer.activeItemData.getAmmoLeft() == 0){
                 wrappedPlayer.activeItemData.reloadTask = ReloadTask(plugin,wrappedPlayer)
                 wrappedPlayer.activeItemData.reloadTask!!.runTaskTimer(plugin,0,1);
@@ -52,8 +44,8 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
                 return
             }
 
-            val status = ActiveExecutors.executorNameToFunction[executor]!!.call(plugin,wrappedPlayer, args.toTypedArray())
-            plugin.logger.info(status.toString())
+            val status = wrappedPlayer.activeItemData.callPrimaryExecutor()
+
             //used for cooldown checks
             if(status) wrappedPlayer.activeItemData.weaponShot();
         }
@@ -70,17 +62,17 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
         if(e.hand!! == EquipmentSlot.OFF_HAND) return
         if(e.action != Action.LEFT_CLICK_AIR && e.action != Action.LEFT_CLICK_BLOCK) return
         plugin.logger.info("interact event called")
-        val wrappedPlayer = PlayerWrapperHolder.getPlayerWrapper(plugin,e.player);
+        val wrappedPlayer = plugin.playerWrapperHandler.getPlayerWrapper(e.player);
         if(!wrappedPlayer.isItemEquip()) return;
         val itemStack = wrappedPlayer.activeItemData.getItemStack()
 
 
         //weapon does not have an active slot
         if(!wrappedPlayer.activeItemData.hasActiveChipSlot()) return
-        plugin.logger.info("has active chip")
-        //TODO bug is here
+
+
         if(wrappedPlayer.activeItemData.isActiveChipOnCooldown()) return;
-        plugin.logger.info("not on cooldown")
+
         val status = wrappedPlayer.activeItemData.useActiveChip();
 
         //used for cooldown checks
@@ -95,19 +87,25 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
     @EventHandler
     fun onMainHandItemChanged(e:PlayerItemHeldEvent){
         plugin.logger.info("changed hands event called")
-        PlayerWrapperHolder.getPlayerWrapper(plugin,e.player).activeItemData.reset();
+        plugin.logger.info("${e.player.inventory.itemInMainHand}")
+        plugin.playerWrapperHandler.getPlayerWrapper(e.player).activeItemData.reset();
         plugin.logger.info("new item = ${e.newSlot}")
-        PlayerWrapperHolder.getPlayerWrapper(plugin,e.player).playerUI.updateBoard();
+
+        //1 tick seems glitchy so 2 for now
         plugin.server.scheduler.runTaskLater(plugin,Runnable {
-            PlayerWrapperHolder.getPlayerWrapper(plugin,e.player).playerUI.updateBoard()
-        },1L)
+            plugin.playerWrapperHandler.getPlayerWrapper(e.player).playerUI.updateBoard()
+        },2L)
     }
+
     @EventHandler
     fun onProjectileLaunch(e:ProjectileLaunchEvent){
         plugin.logger.info("Projectile was launched")
     }
     @EventHandler
     fun onPlayerJoin(e:PlayerJoinEvent){
+
+        plugin.playerWrapperHandler.getPlayerWrapper(e.player);
+
         e.player.gameMode = GameMode.CREATIVE
         e.player.inventory.clear()
         val itemsToGivePlayer = listOf(
@@ -117,17 +115,19 @@ class PlayerController(val plugin:RangedWeaponsTest):Listener  {
             "HitScanRifle",
             "ChargeBeamRifle",)
         for (item in itemsToGivePlayer){
-            e.player.inventory.addItem(plugin.weaponDataHandler.generateRangedWeapon(item)!!)
+
+            val itemBase = plugin.weaponDataHandler.generateRangedWeapon(item) ?: continue
+
+            plugin.weaponDataHandler.writeWeaponLore(plugin.playerWrapperHandler.getPlayerWrapper(e.player),itemBase)
+            e.player.inventory.addItem(itemBase)
         }
 
-        //makes a new wrapper
-        PlayerWrapperHolder.getPlayerWrapper(plugin,e.player);
 
 
     }
     @EventHandler
     fun onPlayerLeave(e:PlayerQuitEvent){
-        PlayerWrapperHolder.removeWrapper(e.player);
+        plugin.playerWrapperHandler.removeWrapper(e.player);
     }
 
 }

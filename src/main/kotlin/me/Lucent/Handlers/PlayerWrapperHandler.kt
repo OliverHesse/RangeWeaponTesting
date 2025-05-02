@@ -1,16 +1,15 @@
-package me.Lucent
+package me.Lucent.Handlers
 
+import me.Lucent.RangedWeaponsTest
 import me.Lucent.Wrappers.PlayerWrapper
-import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 
-import java.util.UUID
 import kotlin.collections.HashMap
 
-object PlayerWrapperHolder {
+class PlayerWrapperHandler(val plugin: RangedWeaponsTest) {
     private val playerWrappers:HashMap<Player,PlayerWrapper> = HashMap();
 
-    fun getPlayerWrapper(plugin:RangedWeaponsTest,player: Player):PlayerWrapper{
+    fun getPlayerWrapper( player: Player):PlayerWrapper{
         if(playerWrappers.containsKey(player)) return playerWrappers[player]!!
 
         val wrapper = PlayerWrapper(plugin,player)

@@ -1,13 +1,11 @@
 package me.Lucent.Handlers
 
 import me.Lucent.RangedWeaponsTest
-import me.Lucent.WeaponMechanics.Shooting.ActiveExecutors
 import me.Lucent.Wrappers.PlayerWrapper
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
-import java.io.File
 
 //TODO potentially make as only for active chips
 class ChipDataHandler(val plugin: RangedWeaponsTest, val dataFile: YamlConfiguration) {
@@ -26,7 +24,7 @@ class ChipDataHandler(val plugin: RangedWeaponsTest, val dataFile: YamlConfigura
         val executor = chipData.getString("executor")
         val args = chipData.getList("executorArgs") ?: listOf<Any>()
 
-        return ActiveExecutors.executorNameToFunction[executor]!!.call(plugin,playerWrapper,args.toTypedArray())
+        return plugin.activeExecutors.executorNameToFunction[executor]!!.call(playerWrapper,args.toTypedArray())
 
     }
 }

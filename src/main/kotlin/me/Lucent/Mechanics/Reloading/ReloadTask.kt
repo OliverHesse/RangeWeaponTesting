@@ -1,4 +1,4 @@
-package me.Lucent.WeaponMechanics.Reloading
+package me.Lucent.Mechanics.Reloading
 
 import me.Lucent.RangedWeaponsTest
 import me.Lucent.Wrappers.PlayerWrapper
