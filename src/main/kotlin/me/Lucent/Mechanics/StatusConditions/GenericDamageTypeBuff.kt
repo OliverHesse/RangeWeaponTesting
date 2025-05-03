@@ -7,9 +7,11 @@ import me.Lucent.Events.CustomPlayerDamageEntityEvent
 import me.Lucent.RangedWeaponsTest
 import me.Lucent.Wrappers.PlayerWrapper
 import org.bukkit.event.EventHandler
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import kotlin.math.min
 
-class GenericDamageTypeBuff(val plugin:RangedWeaponsTest,val player:PlayerWrapper, val stat:DamageType,val type:DamageBuffType,val value:Double, val name:String, val duration:Double):
+class GenericDamageTypeBuff(val plugin:RangedWeaponsTest, val player:PlayerWrapper, val stat:DamageType, val type:DamageBuffType, val value:Double, val name:String, val duration:Double, ):
     StatusCondition() {
     val statusType = StatusType.Buff
 
@@ -43,6 +45,7 @@ class GenericDamageTypeBuff(val plugin:RangedWeaponsTest,val player:PlayerWrappe
         if(duration <= 0.0) return
         plugin.server.pluginManager.registerEvents(this,plugin)
         plugin.logger.info("${duration}")
+
         plugin.server.scheduler.runTaskLater(plugin,Runnable {
             plugin.logger.info("buff will be removed")
             this.remove()
@@ -52,6 +55,7 @@ class GenericDamageTypeBuff(val plugin:RangedWeaponsTest,val player:PlayerWrappe
 
     @EventHandler
     fun playerDamageEntityEvent(e:CustomPlayerDamageEntityEvent){
+        if(e.player != player) return
         when(type){
             DamageBuffType.Bonus -> {e.damageModifiers.baseDamageBonus[stat] =
                 e.damageModifiers.baseDamageBonus[stat] ?: (0.0 + value)

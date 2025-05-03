@@ -109,7 +109,8 @@ class ActiveExecutors(val plugin: RangedWeaponsTest){
         val traceHit = HitScanEffect(plugin,player, Color.RED,rayResult[0]!!.hitPosition);
         traceHit.drawEffect()
         if(rayResult[0]!!.hitBlock != null) return false;
-        val attackEvent = PlayerAttackEntityEvent(plugin,player,player.activeItemData.getItemStack(),rayResult[0]!!.hitEntity!!)
+
+        val attackEvent = PlayerAttackEntityEvent.create(plugin,player,player.activeItemData.getItemStack(),rayResult[0]!!.hitEntity!!)
         attackEvent.callEvent()
 
 
@@ -147,7 +148,7 @@ class ActiveExecutors(val plugin: RangedWeaponsTest){
 
             if(result.hitEntity !is LivingEntity) continue
 
-            val attackEvent = PlayerAttackEntityEvent(plugin,player,player.activeItemData.getItemStack(),result.hitEntity!!)
+            val attackEvent = PlayerAttackEntityEvent.create(plugin,player,player.activeItemData.getItemStack(),result.hitEntity!!)
             attackEvent.callEvent()
             if(attackEvent.cancelled) continue
 

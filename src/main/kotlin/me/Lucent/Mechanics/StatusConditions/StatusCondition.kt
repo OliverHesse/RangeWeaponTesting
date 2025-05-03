@@ -2,6 +2,7 @@ package me.Lucent.Mechanics.StatusConditions
 
 import me.Lucent.Wrappers.RunnableWrappers.GeneralWrapper
 import org.bukkit.event.Listener
+import org.bukkit.potion.PotionEffect
 
 abstract class StatusCondition: Listener {
     abstract val stackCount:Int

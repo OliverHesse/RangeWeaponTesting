@@ -1,9 +1,6 @@
 package me.Lucent
 
-import me.Lucent.Handlers.ChipDataHandler
-import me.Lucent.Handlers.PlayerWrapperHandler
-import me.Lucent.Handlers.ProjectileHandler
-import me.Lucent.Handlers.WeaponDataHandler
+import me.Lucent.Handlers.*
 import me.Lucent.Mechanics.WeaponMechanics.ActiveExecutors
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -16,6 +13,8 @@ class RangedWeaponsTest : JavaPlugin() {
     lateinit var projectileHandler: ProjectileHandler
     lateinit var activeExecutors: ActiveExecutors
     lateinit var playerWrapperHandler: PlayerWrapperHandler
+    lateinit var entityWrapperHandler: EntityWrapperHandler
+
     override fun onEnable() {
         // Plugin startup logic
         if(!dataFolder.exists()) dataFolder.mkdir()
@@ -26,6 +25,7 @@ class RangedWeaponsTest : JavaPlugin() {
         projectileHandler = ProjectileHandler(this)
         activeExecutors = ActiveExecutors(this)
         playerWrapperHandler = PlayerWrapperHandler(this)
+        entityWrapperHandler = EntityWrapperHandler(this)
         //used to fix bug
         activeExecutors.executorNameToFunction["testCall"]?.call()
         server.pluginManager.registerEvents(PlayerController(this),this)

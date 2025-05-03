@@ -1,5 +1,7 @@
 package me.Lucent.Enums
 
+import org.bukkit.potion.PotionEffectType
+
 enum class StatusType {
     Buff,
     Debuff,
